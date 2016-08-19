@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html lang="en" class="no-js">
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BMD Enterprise</title>
+  <meta name="description" content="BMD Enterprise (An IBM Company)" />
+  <meta name="keywords" content="html5 template, css3, one page, animations, agency, portfolio, web design" />
+  <meta name="author" content="Ananth" />
+  <!-- Bootstrap -->
+  <script src="js/modernizr.custom.js"></script>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/jquery.fancybox.css" rel="stylesheet">
+  <link href="css/flickity.css" rel="stylesheet" >
+  <link href="css/animate.css" rel="stylesheet">
+  <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href='http://fonts.googleapis.com/css?family=Nunito:400,300,700' rel='stylesheet' type='text/css'>
+  <link href="css/styles.css" rel="stylesheet">
+  <link href="css/queries.css" rel="stylesheet">
+
+</head>
+<body onload="myFunction();">
+  <header>
+    <section class="hero">
+      <div class="texture-overlay"></div>
+      <div class="container">
+        <div class="row nav-wrapper">
+          <div class="col-md-6 col-sm-6 col-xs-6 text-left">
+            BMD Enterprice
+          </div>
+          <div class="col-md-6 col-sm-6 col-xs-6 text-right navicon">
+            <p>MENU</p><a id="trigger-overlay" class="nav_slide_button nav-toggle" href="#"><span></span></a>
+          </div>
+        </div>
+        <div class="row hero-content">
+          <div class="col-md-12">
+            <h1 class="animated fadeInDown">BMD Enterprise, An @IBM Company.</h1>
+            <h4 class="animated fadeInDown">An exclusive platform to select your interests</h4>
+            <a href='' class="use-btn animated fadeInUp">Register</a>
+            <a href="" class="use-btn animated fadeInUp">News</a>
+            <a href="" class="use-btn animated fadeInUp">UpComing</a>
+            <a href="" class="use-btn animated fadeInUp">Releases</a>
+            <a href="" class="use-btn animated fadeInUp">Downloads</a>
+            <a href="#about" class="learn-btn animated fadeInUp">Learn more <i class="fa fa-arrow-down"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </header>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  
+  <script>
+
+  function myFunction() {
+
+    (function(d, s, id){
+      var js, sdkjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "MFPPushSDK.js";
+      sdkjs.parentNode.insertBefore(js, sdkjs);
+    }(document, 'script', 'pushsdk'));
+
+    window.sdkAsyncInit = function() {
+      var res = new MFPPush(); //create an instance of MFFPush
+      res.isDebugEnable(true) // for debugging
+      function callback(response) {
+        alert(response.response)
+      }
+      var params = {
+        "appGUID":"push app GUID",
+        "appRegion":"App Region"
+        //"clientSecret":"Push Client Secret" (optional)
+      }
+      res.initialize(params, callback) // initialize Push Service
+      //res.register("UserId", function(response) { // register device with userId in push service
+      res.register(function(response) { // register device in push service
+        alert(response.response)
+        res.retrieveAvailableTags(function(response) { //Retrieve available tags
+          alert(response.response)
+          alert("here you go")
+          var json = JSON.parse(response.response);
+          var tagsA = []
+          for (i in json.tags){
+            tagsA.push(json.tags[i].name)
+            alert(json.tags[i].name)
+          }
+          alert(tagsA)
+          res.subscribe(tagsA,function(response) { // subscribe to available tags
+              alert(response.response)
+              tagsA.shift();
+              res.unSubscribe(tagsA,function(response) { // unsubscribe from tags
+                  alert(response.response)
+                  res.unRegisterDevice(function(response) { // unregister device
+                      alert(response.response)
+                    })
+                })
+          })
+        })
+      })
+    };
+  }
+  </script>
+
+</body>
+</html>
