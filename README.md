@@ -84,7 +84,6 @@ res.initialize(params, callback)
 ```
 
 ## Registering Web application.
-{: #web_register}
 
 Use the `register()` API to register the device with {{site.data.keyword.mobilepushshort}} service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix {{site.data.keyword.mobilepushshort}} service web configuration dashboard. For more information, see [Configuring credentials for Google Cloud Messaging](t_push_provider_android.html) under Chrome setup.
 
