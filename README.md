@@ -55,9 +55,7 @@ Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from 
 		js.src = "MFPPushSDK.js";
 		sdkjs.parentNode.insertBefore(js, sdkjs);
 		}(document, 'script', 'pushsdk'));
-		window.sdkAsyncInit = function() {
-		var res = new MFPPush(); //create an instance of MFFPush
-	}
+	
 	```
 
 
