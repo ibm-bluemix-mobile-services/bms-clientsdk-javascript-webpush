@@ -10,12 +10,12 @@ For installing the Javascript SDK in Chrome Web application follow the steps.
 
 Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-push)
 
-1. Edit the manifest file
+1. Edit the `manifest.json` file
 
 For Chrome browser do the following,
 
-* Change name to your site's name
-* Change gcm_sender_id to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
+* Change `name` to your site's name
+* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
 
 ```
 {
@@ -25,7 +25,7 @@ For Chrome browser do the following,
 ```
 
 For Firefox browser add the following values in `manifest.json` file.
-* Change name to your site's name
+* Change `name` to your site's name
 
 ```
 {
