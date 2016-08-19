@@ -73,15 +73,15 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ```
 window.sdkAsyncInit = function() {
-var mfpPush = new MFPPush();
-function callback(response) {
-alert(response.response)
-}
-var initParams = {
-"appGUID":"push app GUID",
-"appRegion":"Region where service hosted"
-}
-mfpPush.initialize(params, callback)
+    var mfpPush = new MFPPush();
+    function callback(response) {
+        alert(response.response)
+    }
+    var initParams = {
+        "appGUID":"push app GUID",
+        "appRegion":"Region where service hosted"
+    }
+    mfpPush.initialize(params, callback)
 }
 ```
 
