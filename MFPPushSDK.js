@@ -655,11 +655,11 @@ function MFPPush(){
       xmlHttp.open(method, url+action, true); // true for asynchronous
       xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
       //  xmlHttp.setRequestHeader('X-Rewrite-Domain',"stage1-dev.ng.bluemix.net");
-      // if (headers) {
-      //   for ( key in Object.keys(headers)) {
-      //     xmlHttp.setRequestHeader(key, headers[key]);
-      //   }
-      // }
+       if (headers) {
+        for (let key of Object.keys(headers)) {
+          xmlHttp.setRequestHeader(key, headers[key]);
+        }
+      }
       xmlHttp.send(JSON.stringify(data));
     }
 
