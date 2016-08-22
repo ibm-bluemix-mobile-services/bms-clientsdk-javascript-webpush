@@ -1,7 +1,7 @@
 # bms-clientsdk-javascript-push
 
 Enable Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
-notifications to your web browser applications. This section describes how to install and use the client
+notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
 JavaScript Push SDK to further develop your Web applications.
 
 ### Initialize in Chrome & Firefox
