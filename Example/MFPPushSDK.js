@@ -17,6 +17,7 @@ window.console.log = this.console.log || function() {};
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
+
 var _appId = "";
 var _pushClientSecret = "";
 var _appRegion = "";
