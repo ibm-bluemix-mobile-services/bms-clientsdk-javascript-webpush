@@ -348,7 +348,6 @@ function MFPPush(){
           "deviceId": _devId,
           "token": JSON.stringify(token),
           "platform": platform,
-          "userAgent":navigator.userAgent,
           "userId":_userId
         };
         callback(registerDeviceWithUserId(device,callbackM));
@@ -356,9 +355,8 @@ function MFPPush(){
         var device = {
           "deviceId": _devId,
           "token": JSON.stringify(token),
-          "platform": platform,
-          "userAgent":navigator.userAgent
-        };
+          "platform": platform
+                  };
         callback(registerDevice(device, callbackM));
       }
 
