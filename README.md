@@ -34,13 +34,9 @@ Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from 
 	}
 	```
 
-2. Add the `MFPPushSDK.js`,`MFPPushServiceWorker.js``manifest.json` to your root directory. It should be accessible publicly. For example, 
+2. Add the `MFPPushSDK.js`,`MFPPushServiceWorker.js``manifest.json` to your root directory. 
 
-	- `https://yoursite.com/manifest.json`  
-	- `https://yoursite.com/MFPPushSDK.js `  
-	- `https://yoursite.com/MFPPushServiceWorker.js ` 
-
-3. Include the `manifest.json` in your `<head>`. This should come before any other `<link rel=>` .
+3. Include the `manifest.json` in `<head>` tag of your html file .
 
 	```
 	<link rel="manifest" href="manifest.json">
