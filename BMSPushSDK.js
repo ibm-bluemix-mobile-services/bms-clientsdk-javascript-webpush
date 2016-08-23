@@ -26,9 +26,9 @@ var isPushInitialized = false;
 var isDebug = true; /* Enable for debuging*/
 var _isUserIdEnabled = false;
 var reWriteDomain = "";
-var MFPPushResponse = {};
+var BMSPushResponse = {};
 
-function MFPPush(){
+function BMSPush(){
   /**
   * Initialize the Push
   *
@@ -55,13 +55,13 @@ function MFPPush(){
       checkNotificationsupport(initializePush,callback);
     } else {
       printResults("Please provide a valid  appGUID or/and appRegion");
-      MFPPushResponseSet("Please provide a valid  appGUID or/and appRegion",404,"Error")
-      callback (MFPPushResponse);
+      BMSPushResponseSet("Please provide a valid  appGUID or/and appRegion",404,"Error")
+      callback (PushResponse);
     }
   };
 
   /**
-  * Registers the device on to the IMFPush Notification Server
+  * Registers the device on to the BMSPush Notification Server
   *
   * @param userId: the User ID value. -- optional
   */
@@ -70,7 +70,7 @@ function MFPPush(){
   };
 
   /**
-  * Unregisters the device from the IMFPush Notification Server
+  * Unregisters the device from the BMSPush Notification Server
   *
   */
   this.unRegisterDevice = function(callbackM){
@@ -92,16 +92,16 @@ function MFPPush(){
               // inform the user that you disabled push
               printResults('Unsubscription error: ', e);
               callback("Error in Unregistration")
-              MFPPushResponseSet("Insufficient Scope. Error in Unregistration",403,"Error")
-              callbackM(MFPPushResponse)
+              BMSPushResponseSet("Insufficient Scope. Error in Unregistration",403,"Error")
+              callbackM(BMSPushResponse)
             })
           },3000);
         }).catch(function(e) {
           printResults('Error thrown while unsubscribing from push messaging :', e);
           callback("Error in Unregistration")
           var error = "Error thrown while unsubscribing from push messaging :"+e;
-          MFPPushResponseSet(error,403,"Error");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(error,403,"Error");
+          callbackM(BMSPushResponse)
         });
       });
     };
@@ -118,8 +118,8 @@ function MFPPush(){
         callback(subscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null. Create tags in your Bluemix App");
-        MFPPushResponseSet("Error.  Tag array cannot be null. Create tags in your Bluemix App",403,"Error");
-        callbackM(MFPPushResponse)
+        BMSPushResponseSet("Error.  Tag array cannot be null. Create tags in your Bluemix App",403,"Error");
+        callbackM(BMSPushResponse)
       }
     };
 
@@ -134,8 +134,8 @@ function MFPPush(){
         callback(unSubscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null.");
-        MFPPushResponseSet("Error.  Tag array cannot be null.",403,"Error");
-        callbackM(MFPPushResponse)
+        BMSPushResponseSet("Error.  Tag array cannot be null.",403,"Error");
+        callbackM(BMSPushResponse)
       }
     };
 
@@ -156,15 +156,15 @@ function MFPPush(){
       printResults("started retrieve available tags");
       callback(retrieveTagsAvailable(callbackM));
     };
-    var MFPPushResponseSet = function(response, statusCode, error) {
+    var BMSPushResponseSet = function(response, statusCode, error) {
 
-      MFPPushResponse.response = response;
-      MFPPushResponse.error = error;
-      MFPPushResponse.statusCode = statusCode;
+      BMSPushResponse.response = response;
+      BMSPushResponse.error = error;
+      BMSPushResponse.statusCode = statusCode;
     }
 
     this.pushResponse = function(){
-      return MFPPushResponse;
+      return BMSPushResponse;
     };
     this.isDebugEnable = function(value) {
       if(typeof(value) === "boolean"){
@@ -200,23 +200,23 @@ function MFPPush(){
                   // to manually change the notification permission to
                   // subscribe to push messages
                   printResults('Permission for Notifications was denied');
-                  MFPPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
                 } else {
                   // A problem occurred with the subscription, this can
                   // often be down to an issue or lack of the gcm_sender_id
                   // and / or gcm_user_visible_only
                   printResults('Unable to subscribe to push.', error);
-                  MFPPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
                 }
                 callback("Error in registration")
-                callbackM(MFPPushResponse)
+                callbackM(BMSPushResponse)
               });
             }
           }).catch(function(e) {
             printResults('Error thrown while subscribing from ' +
             'push messaging.', e);
-            MFPPushResponseSet(e,401,"Error");
-            callbackM(MFPPushResponse)
+            BMSPushResponseSet(e,401,"Error");
+            callbackM(BMSPushResponse)
           });
         });
       }
@@ -229,14 +229,14 @@ function MFPPush(){
     }
     function initializePush(value, callbackM) {
       if (value === true) {
-        MFPPushResponseSet("Successfully initialized Push",200, "")
+        BMSPushResponseSet("Successfully initialized Push",200, "")
         printResults("Successfully Initialized")
         isPushInitialized = true;
-        callbackM(MFPPushResponse)
+        callbackM(BMSPushResponse)
       } else {
         printResults("Error in Initializing push");
         isPushInitialized = false;
-        callbackM(MFPPushResponse)
+        callbackM(BMSPushResponse)
       }
     }
 
@@ -262,7 +262,7 @@ function MFPPush(){
         {
           sendMessage("Set Update Port")
         }
-        navigator.serviceWorker.register('MFPPushServiceWorker.js').then(function(reg) {
+        navigator.serviceWorker.register('BMSPushServiceWorker.js').then(function(reg) {
           if(reg.installing) {
             printResults('Service worker installing');
           } else if(reg.waiting) {
@@ -273,7 +273,7 @@ function MFPPush(){
           if (!(reg.showNotification)) {
             printResults('Notifications aren\'t supported on service workers.');
             callback("Error in initialize. Notifications aren\'t supported on service workers.")
-            MFPPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+            BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
             initializePushM(false,callbackM);
           }
 
@@ -284,7 +284,7 @@ function MFPPush(){
             printResults('The user has blocked notifications.');
             //return false;
             callback("Error in initialize. The user has blocked notifications.")
-            MFPPushResponseSet("The user has blocked notifications",401,"Error");
+            BMSPushResponseSet("The user has blocked notifications",401,"Error");
             initializePushM(false,callbackM);
           }
 
@@ -292,7 +292,7 @@ function MFPPush(){
           if (!('PushManager' in window)) {
             printResults('Push messaging isn\'t supported.');
             callback("Error in registration. Push messaging isn\'t supported.")
-            MFPPushResponseSet("Push messaging isn\'t supported.",401,"Error")
+            BMSPushResponseSet("Push messaging isn\'t supported.",401,"Error")
             initializePushMcallback(false,callbackM);
           }
           initializePushM(true,callbackM);
@@ -300,7 +300,7 @@ function MFPPush(){
       }else {
         printResults('Service workers aren\'t supported in this browser.');
         callback("Service workers aren\'t supported in this browser.")
-        MFPPushResponseSet("Service workers aren\'t supported in this browser.",401,"Error")
+        BMSPushResponseSet("Service workers aren\'t supported in this browser.",401,"Error")
         initializePushM(false,callbackM);
       }
     }
@@ -335,9 +335,9 @@ function MFPPush(){
       }
       var platform = ""
       if(navigator.userAgent.indexOf("Firefox") != -1 ){
-          
+
            platform = "WEB_FIREFOX"
-        
+
         } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
 
           platform = "WEB_CHROME"
@@ -380,21 +380,21 @@ function MFPPush(){
             if (status == 201) {
               printResults("Successfully registered device");
               printResults("The response is ,",res);
-              MFPPushResponseSet(res,201,"");
-              callbackM(MFPPushResponse)
+              BMSPushResponseSet(res,201,"");
+              callbackM(BMSPushResponse)
             } else{
               printResults("Error in registering device");
               printResults("The response is ,",res);
-              MFPPushResponseSet(res,status,"Error in registering device");
-              callbackM(MFPPushResponse)
+              BMSPushResponseSet(res,status,"Error in registering device");
+              callbackM(BMSPushResponse)
             }
             return res;
           },device,null);
         }else if ((status == 406) || (status == 500)) {
           printResults("Error while verifying previuos device registration without userid:");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res,status,"Error while verifying previuos device registration");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res,status,"Error while verifying previuos device registration");
+          callbackM(BMSPushResponse)
           return res;
         } else  {
 
@@ -408,20 +408,20 @@ function MFPPush(){
               if (status == 201) {
                 printResults("Successfully registered device without userid:");
                 printResults("The response is ,",res);
-                MFPPushResponseSet(res,201,"");
-                callbackM(MFPPushResponse)
+                BMSPushResponseSet(res,201,"");
+                callbackM(BMSPushResponse)
               } else{
                 printResults("Error in registering device without userid:");
                 printResults("The response is ,",res);
-                MFPPushResponseSet(res,status,"Error in registering device");
-                callbackM(MFPPushResponse)
+                BMSPushResponseSet(res,status,"Error in registering device");
+                callbackM(BMSPushResponse)
               }
               return res;
             },device,null);
           } else{
             printResults("Device is already registered and device registration parameters not changed. without userid:");
-            MFPPushResponseSet(res,201,"");
-            callbackM(MFPPushResponse)
+            BMSPushResponseSet(res,201,"");
+            callbackM(BMSPushResponse)
             return res;
           }
         }
@@ -450,13 +450,13 @@ function MFPPush(){
               if (status == 201) {
                 printResults("Successfully registered device");
                 printResults("The response is ,",res);
-                MFPPushResponseSet(res.responseText,201,"");
-                callbackM(MFPPushResponse)
+                BMSPushResponseSet(res.responseText,201,"");
+                callbackM(BMSPushResponse)
               } else{
                 printResults("Erron in registering device");
                 printResults("The response is ,",res);
-                MFPPushResponseSet(res.responseText,status,"Error in registering device");
-                callbackM(MFPPushResponse)
+                BMSPushResponseSet(res.responseText,status,"Error in registering device");
+                callbackM(BMSPushResponse)
               }
               return res;
             },device,{
@@ -464,8 +464,8 @@ function MFPPush(){
             });
           }else if ((status == 406) || (status == 500)) {
             printResults("The response is ,",res);
-            MFPPushResponseSet(res.responseText,status,"Error while verifying previuos device registration");
-            callbackM(MFPPushResponse)
+            BMSPushResponseSet(res.responseText,status,"Error while verifying previuos device registration");
+            callbackM(BMSPushResponse)
             return res;
           } else  {
 
@@ -478,12 +478,12 @@ function MFPPush(){
                 status = res.status;
                 if (status == 201) {
                   printResults("The response is ,",res);
-                  MFPPushResponseSet(res.responseText,201,"");
-                  callbackM(MFPPushResponse)
+                  BMSPushResponseSet(res.responseText,201,"");
+                  callbackM(BMSPushResponse)
                 } else{
                   printResults("The response is ,",res);
-                  MFPPushResponseSet(res.responseText,status,"Error in registering device");
-                  callbackM(MFPPushResponse)
+                  BMSPushResponseSet(res.responseText,status,"Error in registering device");
+                  callbackM(BMSPushResponse)
                 }
                 return res;
               },device,{
@@ -491,8 +491,8 @@ function MFPPush(){
               });
             } else{
               printResults("Device is already registered and device registration parameters not changed.");
-              MFPPushResponseSet(res.responseText,201,"");
-              callbackM(MFPPushResponse)
+              BMSPushResponseSet(res.responseText,201,"");
+              callbackM(BMSPushResponse)
               return res;
             }
           }
@@ -501,8 +501,8 @@ function MFPPush(){
         });
       } else {
         printResults("Please provide valid userId and clientSecret.")
-        MFPPushResponseSet("Please provide valid userId and clientSecret.",401,"Error")
-        callbackM(MFPPushResponse)
+        BMSPushResponseSet("Please provide valid userId and clientSecret.",401,"Error")
+        callbackM(BMSPushResponse)
       }
     }
 
@@ -514,14 +514,14 @@ function MFPPush(){
         status = response.status;
         if (status == 204) {
           printResults("Successfully unregistered the device");
-          MFPPushResponseSet(response.responseText,204,"");
+          BMSPushResponseSet(response.responseText,204,"");
           localStorage.setItem("deviceId","");
-          callbackM(MFPPushResponse)
+          callbackM(BMSPushResponse)
           return response;
         } else{
           printResults("Error in  unregistering the device");
-          MFPPushResponseSet(response.responseText,status,"Error")
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(response.responseText,status,"Error")
+          callbackM(BMSPushResponse)
           return response;
         }
       },null);
@@ -540,13 +540,13 @@ function MFPPush(){
         if (status >= 200 && status <= 300)  {
           printResults("Successfully subscribed to tags -");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"");
+          callbackM(BMSPushResponse)
         } else{
           printResults("Error while subscribing to tags :");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"Error while subscribing to tags :");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"Error while subscribing to tags :");
+          callbackM(BMSPushResponse)
         }
         return res;
       },tags,null);
@@ -565,13 +565,13 @@ function MFPPush(){
         if (status >= 200 && status <= 300)  {
           printResults("Successfully Un-subscribed to tags -");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"");
+          callbackM(BMSPushResponse)
         } else{
           printResults("Error while Un-subscribing to tags :");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"Error while Un-subscribing to tags :");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"Error while Un-subscribing to tags :");
+          callbackM(BMSPushResponse)
         }
         return res;
       },tags,null);
@@ -587,13 +587,13 @@ function MFPPush(){
         if (status >= 200 && status <= 300)  {
           printResults("Successfully retrieved subscribed tags");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"");
+          callbackM(BMSPushResponse)
         } else{
           printResults("Error while retrieve subscribed tags :");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"Error while retrieve subscribed tags :");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"Error while retrieve subscribed tags :");
+          callbackM(BMSPushResponse)
         }
         return res;
       },null);
@@ -608,13 +608,13 @@ function MFPPush(){
         if (status >= 200 && status <= 300)  {
           printResults("Successfully retrieved available tags");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"");
+          callbackM(BMSPushResponse)
         } else{
           printResults("Error while retrieve available tags :");
           printResults("The response is ,",res);
-          MFPPushResponseSet(res.responseText,status,"Error while retrieve available tags :");
-          callbackM(MFPPushResponse)
+          BMSPushResponseSet(res.responseText,status,"Error while retrieve available tags :");
+          callbackM(BMSPushResponse)
         }
         return res;
       },null);
@@ -645,7 +645,7 @@ function MFPPush(){
       // _appRegion = localStorage.getItem("appRegion");
       // _appId = localStorage.getItem("appId");
 
-      //var url = 'https://imfpush'+_appRegion+'/imfpush/v1/apps/'+_appId;
+      //var url = 'https://iBMSush'+_appRegion+'/iBMSush/v1/apps/'+_appId;
       var url = 'https://imfpush'+_appRegion+'/imfpush/v1/apps/'+_appId;
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.onreadystatechange = function() {

@@ -22,7 +22,7 @@
             <span class = "blue">Bluemix Web Push example</span>.
     </table>
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  
+
   <script>
 
   function myFunction() {
@@ -31,12 +31,12 @@
       var js, sdkjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) {return;}
       js = d.createElement(s); js.id = id;
-      js.src = "MFPPushSDK.js";
+      js.src = "BMSPushSDK.js";
       sdkjs.parentNode.insertBefore(js, sdkjs);
     }(document, 'script', 'pushsdk'));
 
     window.sdkAsyncInit = function() {
-      var res = new MFPPush(); //create an instance of MFFPush
+      var res = new BMSPush(); //create an instance of BMSPush
       res.isDebugEnable(true) // for debugging
       function callback(response) {
         alert(response.response)

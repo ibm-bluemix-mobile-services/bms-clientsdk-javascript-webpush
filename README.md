@@ -8,7 +8,7 @@ JavaScript Push SDK to further develop your Web applications.
 
 For installing the Javascript SDK in Chrome Web application follow the steps.
 
-Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-push)
+Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-push)
 
 1. Edit the `manifest.json` file
 
@@ -16,25 +16,25 @@ Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from 
 
 	* Change `name` to your site's name
 	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
-	
+
 		```
 		{
 			"name": "YOUR_WEBSITE_NAME",
 			"gcm_sender_id": "GCM_Sender_Id"
 		}
 		```
-	
+
 	For Firefox browser add the following values in `manifest.json` file.
-	
+
 	* Change `name` to your site's name
-	
+
 	```
 	{
 		"name": "YOUR_WEBSITE_NAME"
 	}
 	```
 
-2. Add the `MFPPushSDK.js`,`MFPPushServiceWorker.js``manifest.json` to your root directory. 
+2. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js``manifest.json` to your root directory.
 
 3. Include the `manifest.json` in `<head>` tag of your html file .
 
@@ -48,10 +48,10 @@ Download the `MFPPushSDK.js`,`MFPPushServiceWorker.js` and `manifest.json` from 
 		var js, sdkjs = d.getElementsByTagName(s)[0];
 		if (d.getElementById(id)) {return;}
 		js = d.createElement(s); js.id = id;
-		js.src = "MFPPushSDK.js";
+		js.src = "BMSPushSDK.js";
 		sdkjs.parentNode.insertBefore(js, sdkjs);
 		}(document, 'script', 'pushsdk'));
-	
+
 	```
 
 
@@ -69,7 +69,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ```
 window.sdkAsyncInit = function() {
-    var mfpPush = new MFPPush();
+    var bmsPush = new BMSPush();
     function callback(response) {
         alert(response.response)
     }
@@ -77,7 +77,7 @@ window.sdkAsyncInit = function() {
         "appGUID":"push app GUID",
         "appRegion":"Region where service hosted"
     }
-    mfpPush.initialize(params, callback)
+    bmsPush.initialize(params, callback)
 }
 ```
 
@@ -91,7 +91,7 @@ Use the following code snippet to register in Bluemix push notifications service
 
 ```
 window.sdkAsyncInit = function() {
-	var mfpPush = new MFPPush();
+	var bmsPush = new BMSPush();
 	function callback(response) {
 		alert(response.response)
 	}
@@ -99,8 +99,8 @@ window.sdkAsyncInit = function() {
 		"appGUID":"push app GUID",
 		"appRegion":"Region where service hosted"
 	}
-	mfpPush.initialize(params, callback)
-	mfpPush.register(function(response) {
+	bmsPush.initialize(params, callback)
+	bmsPush.register(function(response) {
 		alert(response.response)
 	})
 }
