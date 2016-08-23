@@ -205,7 +205,7 @@ function MFPPush(){
                   // A problem occurred with the subscription, this can
                   // often be down to an issue or lack of the gcm_sender_id
                   // and / or gcm_user_visible_only
-                  console.log('Unable to subscribe to push.', error);
+                  printResults('Unable to subscribe to push.', error);
                   MFPPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
                 }
                 callback("Error in registration")
@@ -213,7 +213,7 @@ function MFPPush(){
               });
             }
           }).catch(function(e) {
-            console.log('Error thrown while subscribing from ' +
+            printResults('Error thrown while subscribing from ' +
             'push messaging.', e);
             MFPPushResponseSet(e,401,"Error");
             callbackM(MFPPushResponse)
@@ -223,7 +223,7 @@ function MFPPush(){
     function update () {
 
       function callback(response) {
-        console.log("updation is done :", response);
+        printResults("updation is done :", response);
       }
       registerPush(_userId, callback);
     }
