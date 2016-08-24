@@ -23,21 +23,13 @@
     </table>
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 
+<script src="MFPPushSDK.js" async></script>
   <script>
 
   function myFunction() {
 
-    (function(d, s, id){
-      var js, sdkjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) {return;}
-      js = d.createElement(s); js.id = id;
-      js.src = "BMSPushSDK.js";
-      sdkjs.parentNode.insertBefore(js, sdkjs);
-    }(document, 'script', 'pushsdk'));
-
-    window.sdkAsyncInit = function() {
-      var res = new BMSPush(); //create an instance of BMSPush
-      res.isDebugEnable(true) // for debugging
+      var bmsPush = new BMSPush(); //create an instance of BMSPush
+      bmsPush.isDebugEnable(true) // for debugging
       function callback(response) {
         alert(response.response)
       }
@@ -46,11 +38,11 @@
         "appRegion":"App Region"
         //"clientSecret":"Push Client Secret" (optional)
       }
-      res.initialize(params, callback) // initialize Push Service
-      //res.register("UserId", function(response) { // register device with userId in push service
-      res.register(function(response) { // register device in push service
+      bmsPush.initialize(params, callback) // initialize Push Service
+      //res.registerWithUserId("UserId", function(response) { // register device with userId in push service
+      bmsPush.register(function(response) { // register device in push service
         alert(response.response)
-        res.retrieveAvailableTags(function(response) { //Retrieve available tags
+        bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
           alert(response.response)
           alert("here you go")
           var json = JSON.parse(response.response);
@@ -60,19 +52,18 @@
             alert(json.tags[i].name)
           }
           alert(tagsA)
-          res.subscribe(tagsA,function(response) { // subscribe to available tags
+          bmsPush.subscribe(tagsA,function(response) { // subscribe to available tags
               alert(response.response)
               tagsA.shift();
-              res.unSubscribe(tagsA,function(response) { // unsubscribe from tags
+              bmsPush.unSubscribe(tagsA,function(response) { // unsubscribe from tags
                   alert(response.response)
-                  res.unRegisterDevice(function(response) { // unregister device
+                  bmsPush.unRegisterDevice(function(response) { // unregister device
                       alert(response.response)
                     })
                 })
           })
         })
       })
-    };
   }
   </script>
 

@@ -11,9 +11,6 @@
     limitations under the License.
 */
 'use strict'
-window.console = window.console || {};
-window.console.log = this.console.log || function() {};
-
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
@@ -63,9 +60,17 @@ function BMSPush(){
   /**
   * Registers the device on to the BMSPush Notification Server
   *
-  * @param userId: the User ID value. -- optional
   */
-  this.register = function (userId, callbackM){
+  this.register = function (callbackM){
+    registerPush("",callbackM)
+  };
+
+  /**
+  * Registers the device on to the BMSPush Notification Server
+  *
+  * @param userId: the User ID value.
+  */
+  this.registerWithUserId = function (userId, callbackM){
     registerPush(userId,callbackM)
   };
 
@@ -694,16 +699,16 @@ function BMSPush(){
 
     function validateInput(stringValue) {
 
-      return ((stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '')) ? false:true;
+      return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false:true;
     }
 
     function printResults (Result,a){
       if (isDebug == true) {
+        if (a === undefined){
+          a = " "
+        }
         console.log("Response : ",Result," ",a);
       }
     }
 
-  }
-  if (typeof window.sdkAsyncInit === "function") {
-    sdkAsyncInit();
   }
