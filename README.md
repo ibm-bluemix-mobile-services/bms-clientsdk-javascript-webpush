@@ -96,3 +96,5 @@ Use the following code snippet to register in Bluemix push notifications service
 	})
 
 ```
+
+>Note : For Debugging use `bmsPush.isDebugEnable(true)`.
