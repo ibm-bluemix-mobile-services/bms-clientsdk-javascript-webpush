@@ -8,7 +8,7 @@ JavaScript Push SDK to further develop your Web applications.
 
 For installing the Javascript SDK in Chrome Web application follow the steps.
 
-Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-push)
+Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/development)
 
 1. Edit the `manifest.json` file
 
@@ -44,13 +44,7 @@ Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from 
 4. Include Bluemix Web push SDK to the web application from github.
 
 	```
-	(function(d, s, id){
-		var js, sdkjs = d.getElementsByTagName(s)[0];
-		if (d.getElementById(id)) {return;}
-		js = d.createElement(s); js.id = id;
-		js.src = "BMSPushSDK.js";
-		sdkjs.parentNode.insertBefore(js, sdkjs);
-		}(document, 'script', 'pushsdk'));
+  <script src="BMSPushSDK.js" async></script>
 
 	```
 
@@ -68,7 +62,6 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For Sydney - `.au-syd.bluemix.net`
 
 ```
-window.sdkAsyncInit = function() {
     var bmsPush = new BMSPush();
     function callback(response) {
         alert(response.response)
@@ -78,7 +71,6 @@ window.sdkAsyncInit = function() {
         "appRegion":"Region where service hosted"
     }
     bmsPush.initialize(params, callback)
-}
 ```
 
 ## Registering Web application.
@@ -90,7 +82,6 @@ For registering from Firefox , add Web Site URL in the Bluemix {{site.data.keywo
 Use the following code snippet to register in Bluemix push notifications service.
 
 ```
-window.sdkAsyncInit = function() {
 	var bmsPush = new BMSPush();
 	function callback(response) {
 		alert(response.response)
@@ -103,5 +94,5 @@ window.sdkAsyncInit = function() {
 	bmsPush.register(function(response) {
 		alert(response.response)
 	})
-}
+
 ```
