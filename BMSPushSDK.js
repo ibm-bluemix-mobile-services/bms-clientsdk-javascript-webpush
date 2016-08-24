@@ -62,7 +62,8 @@ function BMSPush(){
   *
   */
   this.register = function (callbackM){
-    registerPush("",callbackM)
+    _userId = "";
+    registerPush(_userId,callbackM)
   };
 
   /**
