@@ -515,7 +515,7 @@ function BMSPush(){
     function unRegisterDevice (callbackM){
       printResults("Entering the unregister device");
       var devId = localStorage.getItem("deviceId");
-      deletes("/devices"+devId, function ( response ) {
+      deletes("/devices/"+devId, function ( response ) {
 
         status = response.status;
         if (status == 204) {
@@ -672,23 +672,23 @@ function BMSPush(){
     function setRewriteDomain(appReg) {
       var a = appReg.split(".");
       if(appReg.includes("stage1-dev")){
-        _appRegion = ".stage1-dev."+a[1]+".bluemix.net"
-        reWriteDomain = "stage1-dev."+a[1]+".bluemix.net"
+        _appRegion = ".stage1-dev."+a[2]+".bluemix.net"
+        reWriteDomain = "stage1-dev."+a[2]+".bluemix.net"
       } else if (appReg.includes("stage1-test")) {
-        _appRegion = ".stage1."+a[1]+".bluemix.net"
-        reWriteDomain = "stage1-test."+a[1]+".bluemix.net"
+        _appRegion = ".stage1-test."+a[2]+".bluemix.net"
+        reWriteDomain = "stage1-test."+a[2]+".bluemix.net"
       }else if (appReg.includes("stage1")) {
-        _appRegion = ".stage1."+a[1]+".bluemix.net"
-        reWriteDomain = "stage1."+a[1]+".bluemix.net"
+        _appRegion = ".stage1."+a[2]+".bluemix.net"
+        reWriteDomain = "stage1."+a[2]+".bluemix.net"
       }else if (appReg.includes("ng")) {
         _appRegion = ".ng.bluemix.net"
-        reWriteDomain = "ng."+a[1]+".bluemix.net"
+        reWriteDomain = "ng.bluemix.net"
       }else if (appReg.includes("eu-gb")) {
         _appRegion = ".eu-gb.bluemix.net"
-        reWriteDomain = "eu-gb."+a[1]+".bluemix.net"
+        reWriteDomain = "eu-gb.bluemix.net"
       }else if (appReg.includes("au-syd")) {
         _appRegion = ".au-syd.bluemix.net"
-        reWriteDomain = "au-syd."+a[1]+".bluemix.net"
+        reWriteDomain = "au-syd.bluemix.net"
       }
     }
     function generateUUID (){

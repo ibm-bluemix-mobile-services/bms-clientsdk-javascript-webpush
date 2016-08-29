@@ -14,7 +14,7 @@ Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from 
 
 	For Chrome browser do the following,
 
-	* Change `name` to your site's name
+	* Change `name` to your Website's name
 	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
 
 		```
@@ -26,7 +26,7 @@ Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from 
 
 	For Firefox browser add the following values in `manifest.json` file.
 
-	* Change `name` to your site's name
+	* Change `name` to your Website's name
 
 	```
 	{
