@@ -8,14 +8,14 @@ JavaScript Push SDK to further develop your Web applications.
 
 For installing the Javascript SDK in Chrome Web application follow the steps.
 
-Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master)
+[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json`.
 
 1. Edit the `manifest.json` file
 
 	For Chrome browser do the following,
 
 	* Change `name` to your Website's name
-	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
+	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](https://console.ng.bluemix.net/docs/services/mobilepush/t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
 
 		```
 		{
@@ -53,16 +53,16 @@ Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from 
 
 Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
 
-To get your app GUID, select the Configuration option in the navigation pane for your initialized push services and click **Mobile Options**.Modify the code snippet to use your Bluemix push notifications service appGUID parameter.
+To get your app GUID, select the Configuration option in the navigation pane of your push services and click **Mobile Options**.Modify the code snippet to use your Bluemix push notifications service appGUID parameter.
 
-The `App Region` specifies the location where the Push service is hosted. You can use one of the three values:
+The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
 - For US Dallas - `.ng.bluemix.net`
 - For UK - `.eu-gb.bluemix.net`
 - For Sydney - `.au-syd.bluemix.net`
 
 ```
-    var bmsPush = new BMSPush();
+    var bmsPush = new BMSPush()
     function callback(response) {
         alert(response.response)
     }
@@ -75,14 +75,14 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ## Registering Web application.
 
-Use the `register()` API to register the device with {{site.data.keyword.mobilepushshort}} service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard.
+Use the `register()` API to register the device with Bluemix Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard under Chrome setup .
 
 For registering from Firefox , add Web Site URL in the Bluemix Push Notifications service web configuration dashboard under Firefox setup.
 
 Use the following code snippet to register in Bluemix push notifications service.
 
 ```
-	var bmsPush = new BMSPush();
+	var bmsPush = new BMSPush()
 	function callback(response) {
 		alert(response.response)
 	}
@@ -90,7 +90,7 @@ Use the following code snippet to register in Bluemix push notifications service
 		"appGUID":"push app GUID",
 		"appRegion":"Region where service hosted"
 	}
-	bmsPush.initialize(params, callback)
+	bmsPush.initialize(initParams, callback)
 	bmsPush.register(function(response) {
 		alert(response.response)
 	})
@@ -103,7 +103,7 @@ Use the following code snippet to register in Bluemix push notifications service
 For `UserId` based registration use the following code snippet,
 
 ```
-  bmsPush.registerWithUserId("your UsrId",function(response) {
+  bmsPush.registerWithUserId("your UserId",function(response) {
     alert(response.response)
   })
 ```
@@ -114,9 +114,7 @@ To get the available tags use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    alert(response.response)
-    alert("here you go")
-    var json = JSON.parse(response.response);
+    var json = JSON.parse(response.response)
     var tagsA = []
     for (i in json.tags){
       tagsA.push(json.tags[i].name)
