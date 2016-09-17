@@ -88,7 +88,8 @@ Use the following code snippet to register in Bluemix push notifications service
 	}
 	var initParams = {
 		"appGUID":"push app GUID",
-		"appRegion":"Region where service hosted"
+		"appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret" //optional. Pass this value when userId based notifications is needed
 	}
 	bmsPush.initialize(initParams, callback)
 	bmsPush.register(function(response) {
