@@ -114,19 +114,19 @@ To get the available tags use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    var json = JSON.parse(response.response)
-    var tagsA = []
-    for (i in json.tags){
-      tagsA.push(json.tags[i].name)
+    var jsonResponse = JSON.parse(response.response)
+    var tagsArray = []
+    for (i in jsonResponse.tags){
+      tagsArray.push(jsonResponse.tags[i].name)
     }
-    alert(tagsA)
+    alert(tagsArray)
  })
 ```
 
 The tag subscription is handled by the `subscribe()` method. Pass the array of tag names as the parameter.
 
 ```
-  bmsPush.subscribe(tagsA,function(response) {
+  bmsPush.subscribe(tagsArray,function(response) {
     alert(response.response)
   })
 ```
@@ -134,7 +134,7 @@ The tag subscription is handled by the `subscribe()` method. Pass the array of t
 To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array of tag names as the parameter.
 
 ```
-  bmsPush.unSubscribe(tagsA,function(response) {
+  bmsPush.unSubscribe(tagsArray,function(response) {
     alert(response.response)
   }
 ```
