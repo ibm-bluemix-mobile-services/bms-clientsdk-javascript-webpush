@@ -28,11 +28,11 @@ For installing the Javascript SDK in Chrome Web application follow the steps.
 
 	* Change `name` to your Website's name
 
-	```
-	{
-		"name": "YOUR_WEBSITE_NAME"
-	}
-	```
+  	```
+  	{
+  		"name": "YOUR_WEBSITE_NAME"
+  	}
+  	```
 
 2. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` to your root directory.
 
