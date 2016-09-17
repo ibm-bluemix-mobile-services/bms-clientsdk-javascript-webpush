@@ -53,9 +53,9 @@ For installing the Javascript SDK in Chrome Web application follow the steps.
 
 Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
 
-To get your app GUID, select the Configuration option in the navigation pane for your initialized push services and click **Mobile Options**.Modify the code snippet to use your Bluemix push notifications service appGUID parameter.
+To get your app GUID, select the Configuration option in the navigation pane of your push services and click **Mobile Options**.Modify the code snippet to use your Bluemix push notifications service appGUID parameter.
 
-The `App Region` specifies the location where the Push service is hosted. You can use one of the three values:
+The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
 - For US Dallas - `.ng.bluemix.net`
 - For UK - `.eu-gb.bluemix.net`
@@ -75,7 +75,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ## Registering Web application.
 
-Use the `register()` API to register the device with {{site.data.keyword.mobilepushshort}} service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard.
+Use the `register()` API to register the device with Bluemix Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard under Chrome setup .
 
 For registering from Firefox , add Web Site URL in the Bluemix Push Notifications service web configuration dashboard under Firefox setup.
 
