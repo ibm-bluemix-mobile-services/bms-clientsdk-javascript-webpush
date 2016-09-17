@@ -62,7 +62,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For Sydney - `.au-syd.bluemix.net`
 
 ```
-    var bmsPush = new BMSPush();
+    var bmsPush = new BMSPush()
     function callback(response) {
         alert(response.response)
     }
@@ -82,7 +82,7 @@ For registering from Firefox , add Web Site URL in the Bluemix Push Notification
 Use the following code snippet to register in Bluemix push notifications service.
 
 ```
-	var bmsPush = new BMSPush();
+	var bmsPush = new BMSPush()
 	function callback(response) {
 		alert(response.response)
 	}
@@ -90,7 +90,7 @@ Use the following code snippet to register in Bluemix push notifications service
 		"appGUID":"push app GUID",
 		"appRegion":"Region where service hosted"
 	}
-	bmsPush.initialize(params, callback)
+	bmsPush.initialize(initParams, callback)
 	bmsPush.register(function(response) {
 		alert(response.response)
 	})
@@ -114,7 +114,7 @@ To get the available tags use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    var json = JSON.parse(response.response);
+    var json = JSON.parse(response.response)
     var tagsA = []
     for (i in json.tags){
       tagsA.push(json.tags[i].name)
