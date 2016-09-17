@@ -68,7 +68,8 @@ The `App Region` specifies the location where the Push service is hosted. You ca
     }
     var initParams = {
         "appGUID":"push app GUID",
-        "appRegion":"Region where service hosted"
+        "appRegion":"Region where service hosted",
+        "clientSecret":"push app client secret" // optional parameter. This value is needed for userId based notifications registration.
     }
     bmsPush.initialize(params, callback)
 ```
@@ -88,8 +89,7 @@ Use the following code snippet to register in Bluemix push notifications service
 	}
 	var initParams = {
 		"appGUID":"push app GUID",
-		"appRegion":"Region where service hosted",
-    "clientSecret":"push app client secret" //optional. Pass this value when userId based notifications is needed
+		"appRegion":"Region where service hosted"
 	}
 	bmsPush.initialize(initParams, callback)
 	bmsPush.register(function(response) {
@@ -104,6 +104,16 @@ Use the following code snippet to register in Bluemix push notifications service
 For `UserId` based registration use the following code snippet,
 
 ```
+  var bmsPush = new BMSPush()
+  function callback(response) {
+    alert(response.response)
+  }
+  var initParams = {
+    "appGUID":"push app GUID",
+    "appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret"
+  }
+  bmsPush.initialize(initParams, callback)
   bmsPush.registerWithUserId("your UserId",function(response) {
     alert(response.response)
   })
