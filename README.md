@@ -114,8 +114,6 @@ To get the available tags use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    alert(response.response)
-    alert("here you go")
     var json = JSON.parse(response.response);
     var tagsA = []
     for (i in json.tags){
