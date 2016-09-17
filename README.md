@@ -26,7 +26,7 @@ For installing the Javascript SDK in Chrome Web application follow the steps.
 
 	For Firefox browser add the following values in `manifest.json` file.
 
-	* Change `name` to your Website's name
+	* Change `name` to your Website's name.
 
     ```
     {
