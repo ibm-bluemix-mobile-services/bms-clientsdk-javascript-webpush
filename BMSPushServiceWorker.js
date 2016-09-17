@@ -1,5 +1,5 @@
 /*
-    Copyright 2016 IBM Corp.
+    Copyright 2016-17 IBM Corp.
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -33,16 +33,18 @@ self.addEventListener('push', function(event) {
     console.log('Event data is : ', event.data.text());
   }
   var messageJson = event.data.json();
-  var title = messageJson.title;
+  var title = messageJson.title ? messageJson.title : "New message";
   var imageUrl = messageJson.iconUrl ? messageJson.iconUrl : "images/icon.png";
   var tagJson = messageJson.payload;
   var tag = tagJson.tag ? tagJson.tag : "";
   var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
+  var payloadData = messageJson.payload ? messageJson.payload : "Example message"
 
   event.waitUntil(
     self.registration.showNotification(title, {
       body: bodyAlert,
       icon: imageUrl,
+      data:payloadData,
       tag: tag
     }));
   });

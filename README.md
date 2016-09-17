@@ -8,7 +8,7 @@ JavaScript Push SDK to further develop your Web applications.
 
 For installing the Javascript SDK in Chrome Web application follow the steps.
 
-Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/development)
+Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master)
 
 1. Edit the `manifest.json` file
 
@@ -34,7 +34,7 @@ Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from 
 	}
 	```
 
-2. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js``manifest.json` to your root directory.
+2. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` to your root directory.
 
 3. Include the `manifest.json` in `<head>` tag of your html file .
 
@@ -75,9 +75,9 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ## Registering Web application.
 
-Use the `register()` API to register the device with {{site.data.keyword.mobilepushshort}} service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix {{site.data.keyword.mobilepushshort}} service web configuration dashboard. For more information, see [Configuring credentials for Google Cloud Messaging](t_push_provider_android.html) under Chrome setup.
+Use the `register()` API to register the device with {{site.data.keyword.mobilepushshort}} service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard.
 
-For registering from Firefox , add Web Site URL in the Bluemix {{site.data.keyword.mobilepushshort}} service web configuration dashboard under Firefox setup.
+For registering from Firefox , add Web Site URL in the Bluemix Push Notifications service web configuration dashboard under Firefox setup.
 
 Use the following code snippet to register in Bluemix push notifications service.
 
@@ -98,3 +98,71 @@ Use the following code snippet to register in Bluemix push notifications service
 ```
 
 >Note : For Debugging use `bmsPush.isDebugEnable(true)`.
+
+
+For `UserId` based registration use the following code snippet,
+
+```
+  bmsPush.registerWithUserId("your UsrId",function(response) {
+    alert(response.response)
+  })
+```
+
+## Subscribing for tags.
+
+To get the available tags use the `retrieveAvailableTags()` method.
+
+```
+ bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
+    alert(response.response)
+    alert("here you go")
+    var json = JSON.parse(response.response);
+    var tagsA = []
+    for (i in json.tags){
+      tagsA.push(json.tags[i].name)
+    }
+    alert(tagsA)
+ })
+```
+
+The tag subscription is handled by the `subscribe()` method. Pass the array of tag names as the parameter.
+
+```
+  bmsPush.subscribe(tagsA,function(response) {
+    alert(response.response)
+  })
+```
+
+To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array of tag names as the parameter.
+
+```
+  bmsPush.unSubscribe(tagsA,function(response) {
+    alert(response.response)
+  }
+```
+
+## Unregister from Bluemix Push notifications Service
+
+To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
+
+```
+  bmsPush.unRegisterDevice(function(response) {
+    alert(response.response)
+  }
+```
+
+
+=======================
+Copyright 2016-17 IBM Corp.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
