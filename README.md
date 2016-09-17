@@ -8,14 +8,14 @@ JavaScript Push SDK to further develop your Web applications.
 
 For installing the Javascript SDK in Chrome Web application follow the steps.
 
-Download the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` from the [Bluemix Web push SDK](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master)
+[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json`.
 
 1. Edit the `manifest.json` file
 
 	For Chrome browser do the following,
 
 	* Change `name` to your Website's name
-	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
+	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](https://console.ng.bluemix.net/docs/services/mobilepush/t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
 
 		```
 		{
