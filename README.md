@@ -98,7 +98,7 @@ Use the following code snippet to register in Bluemix push notifications service
 
 ```
 
->Note : For Debugging use `bmsPush.isDebugEnable(true)`.
+>Note : For Debugging use `bmsPush.isBMSPushDebugEnable(true)`.
 
 
 For `UserId` based registration use the following code snippet,
