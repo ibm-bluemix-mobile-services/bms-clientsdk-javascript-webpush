@@ -379,7 +379,7 @@ function BMSPush(){
               } else{
                 printResults("Error in registering device");
                 printResults("The response is ,",res);
-                BMSPushResponseSet(res,bmsPushStatus,"Error in registering device");
+                BMSPushResponseSet(res,status,"Error in registering device");
                 callbackM(BMSPushResponse)
               }
               return res;
