@@ -364,7 +364,7 @@ function BMSPush(){
         get("/devices/"+devId,function ( res ) {
 
           printResults('previous Device Registration Result :', res);
-          status = res.status ;
+          var status = res.status ;
           if(status == 404){
             printResults('Starting New Device Registration  without userid:');
             post("/devices", function ( res ) {
@@ -398,7 +398,7 @@ function BMSPush(){
             if ( !(rToken === device.token) ||  !(rDevId === device.deviceId)){
               put("/devices/"+devId, function ( res ) {
 
-                status = res.status;
+                var status = res.status;
                 if (status == 201) {
                   printResults("Successfully registered device without userid:");
                   printResults("The response is ,",res);
@@ -433,7 +433,7 @@ function BMSPush(){
         if (validateInput(_pushClientSecret) && validateInput(_userId)) {
           get("/devices/"+devId,function ( res ) {
             printResults('previous Device Registration Result :', res);
-            status = res.status ;
+            var status = res.status ;
             if(status == 404){
               printResults('Starting New Device Registration ');
               post("/devices", function ( res ) {
@@ -469,7 +469,7 @@ function BMSPush(){
               var userId = resp.userId;
               if ( !(rToken === device.token) ||  !(rDevId === device.deviceId) || !(userId == _userId)){
                 put("/devices/"+devId, function ( res ) {
-                  status = res.status;
+                  var status = res.status;
                   if (status == 201) {
                     printResults("The response is ,",res);
                     BMSPushResponseSet(res.responseText,201,"");
@@ -505,7 +505,7 @@ function BMSPush(){
         var devId = localStorage.getItem("deviceId");
         deletes("/devices/"+devId, function ( response ) {
 
-          status = response.status;
+          var status = response.status;
           if (status == 204) {
             printResults("Successfully unregistered the device");
             BMSPushResponseSet(response.responseText,204,"");
@@ -529,7 +529,7 @@ function BMSPush(){
           "tagNames": tagArray
         };
         post("/subscriptions", function ( res ) {
-          status = res.status ;
+          var status = res.status ;
           printResults('Tag Subscription Result :', res);
           if (status >= 200 && status <= 300)  {
             printResults("Successfully subscribed to tags -");
@@ -554,7 +554,7 @@ function BMSPush(){
           "tagNames": tagArray
         };
         post("/subscriptions?action=delete", function ( res ) {
-          status = res.status ;
+          var status = res.status ;
           printResults('Tag un-subscription Result :', res);
           if (status >= 200 && status <= 300)  {
             printResults("Successfully Un-subscribed to tags -");
@@ -576,7 +576,7 @@ function BMSPush(){
         var devId = localStorage.getItem("deviceId");
 
         get("/subscriptions?deviceId="+devId,function ( res ) {
-          status = res.status ;
+          var status = res.status ;
           printResults('Retrieve subscription Result :', res);
           if (status >= 200 && status <= 300)  {
             printResults("Successfully retrieved subscribed tags");
@@ -597,7 +597,7 @@ function BMSPush(){
         printResults("Entering the Retrieve available tags");
         printResults("Entering the Retrieve subscriptions of tags");
         get("/tags",function ( res ) {
-          status = res.status ;
+          var status = res.status ;
           printResults('Retrieve available tags Result :', res);
           if (status >= 200 && status <= 300)  {
             printResults("Successfully retrieved available tags");
@@ -636,10 +636,6 @@ function BMSPush(){
 
       function callPushRest(method, callback, action, data, headers)
       {
-        // _appRegion = localStorage.getItem("appRegion");
-        // _appId = localStorage.getItem("appId");
-
-        //var url = 'https://iBMSush'+_appRegion+'/iBMSush/v1/apps/'+_appId;
         var url = 'https://imfpush'+_appRegion+'/imfpush/v1/apps/'+_appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
@@ -648,7 +644,6 @@ function BMSPush(){
         }
         xmlHttp.open(method, url+action, true); // true for asynchronous
         xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
-        //  xmlHttp.setRequestHeader('X-Rewrite-Domain',"stage1-dev.ng.bluemix.net");
         if (headers) {
           for (let key of Object.keys(headers)) {
             xmlHttp.setRequestHeader(key, headers[key]);
@@ -661,22 +656,16 @@ function BMSPush(){
         var a = appReg.split(".");
         if(appReg.includes("stage1-dev")){
           _appRegion = ".stage1-dev."+a[2]+".bluemix.net"
-          reWriteDomain = "stage1-dev."+a[2]+".bluemix.net"
         } else if (appReg.includes("stage1-test")) {
           _appRegion = ".stage1-test."+a[2]+".bluemix.net"
-          reWriteDomain = "stage1-test."+a[2]+".bluemix.net"
         }else if (appReg.includes("stage1")) {
           _appRegion = ".stage1."+a[2]+".bluemix.net"
-          reWriteDomain = "stage1."+a[2]+".bluemix.net"
         }else if (appReg.includes("ng")) {
           _appRegion = ".ng.bluemix.net"
-          reWriteDomain = "ng.bluemix.net"
         }else if (appReg.includes("eu-gb")) {
           _appRegion = ".eu-gb.bluemix.net"
-          reWriteDomain = "eu-gb.bluemix.net"
         }else if (appReg.includes("au-syd")) {
           _appRegion = ".au-syd.bluemix.net"
-          reWriteDomain = "au-syd.bluemix.net"
         }
       }
 
