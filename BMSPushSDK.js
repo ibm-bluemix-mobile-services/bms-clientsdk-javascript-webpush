@@ -706,13 +706,11 @@ function BMSPush(){
           for( var i=0; i < 32; i++ ){
             uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
           }
-          alert(uuid)
           localStorage.setItem("deviceId", uuid);
           _devId = uuid;
           return _devId;
         }else {
           _devId = localStorage.getItem("deviceId");
-          alert(_devId)
           return _devId;
         }
       }
