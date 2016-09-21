@@ -32,7 +32,7 @@ function BMSPush(){
   *
   * @param appGUID - The push service App Id value
   * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
-  * @param clientSecret - The push service client secret value -- optional
+  * @param clientSecret - The push service client secret value.
   */
   this.initialize = function(params, callback ) {
     printResults("started initialize");
@@ -202,13 +202,13 @@ function BMSPush(){
                   // to manually change the notification permission to
                   // subscribe to push messages
                   printResults('Permission for Notifications was denied');
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
                 } else {
                   // A problem occurred with the subscription, this can
                   // often be down to an issue or lack of the gcm_sender_id
                   // and / or gcm_user_visible_only
                   printResults('Unable to subscribe to push.', error);
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
                 }
                 callback("Error in registration")
                 callbackM(BMSPushResponse)
@@ -217,7 +217,7 @@ function BMSPush(){
           }).catch(function(e) {
             printResults('Error thrown while subscribing from ' +
             'push messaging.', e);
-            BMSPushResponseSet(e,401,"Error");
+            BMSPushResponseSet(e,403,"Error");
             callbackM(BMSPushResponse)
           });
         });
@@ -275,7 +275,7 @@ function BMSPush(){
             if (!(reg.showNotification)) {
               printResults('Notifications aren\'t supported on service workers.');
               callback("Error in initialize. Notifications aren\'t supported on service workers.")
-              BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+              BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -286,7 +286,7 @@ function BMSPush(){
               printResults('The user has blocked notifications.');
               //return false;
               callback("Error in initialize. The user has blocked notifications.")
-              BMSPushResponseSet("The user has blocked notifications",401,"Error");
+              BMSPushResponseSet("The user has blocked notifications",403,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -294,7 +294,7 @@ function BMSPush(){
             if (!('PushManager' in window)) {
               printResults('Push messaging isn\'t supported.');
               callback("Error in registration. Push messaging isn\'t supported.")
-              BMSPushResponseSet("Push messaging isn\'t supported.",401,"Error")
+              BMSPushResponseSet("Push messaging isn\'t supported.",403,"Error")
               initializePushMcallback(false,callbackM);
             }
             initializePushM(true,callbackM);
@@ -302,7 +302,7 @@ function BMSPush(){
         }else {
           printResults('Service workers aren\'t supported in this browser.');
           callback("Service workers aren\'t supported in this browser.")
-          BMSPushResponseSet("Service workers aren\'t supported in this browser.",401,"Error")
+          BMSPushResponseSet("Service workers aren\'t supported in this browser.",403,"Error")
           initializePushM(false,callbackM);
         }
       }
@@ -453,9 +453,7 @@ function BMSPush(){
                   callbackM(BMSPushResponse)
                 }
                 return res;
-              },device,{
-                "clientSecret": _pushClientSecret
-              });
+              },device,null);
             }else if ((status == 406) || (status == 500)) {
               printResults("The response is ,",res);
               BMSPushResponseSet(res.responseText,status,"Error while verifying previuos device registration");
@@ -480,9 +478,7 @@ function BMSPush(){
                     callbackM(BMSPushResponse)
                   }
                   return res;
-                },device,{
-                  "clientSecret": _pushClientSecret
-                });
+                },device,null);
               } else{
                 printResults("Device is already registered and device registration parameters not changed.");
                 BMSPushResponseSet(res.responseText,201,"");
@@ -490,12 +486,10 @@ function BMSPush(){
                 return res;
               }
             }
-          }, device,{
-            "clientSecret": _pushClientSecret
-          });
+          }, device,null);
         } else {
           printResults("Please provide valid userId and clientSecret.")
-          BMSPushResponseSet("Please provide valid userId and clientSecret.",401,"Error")
+          BMSPushResponseSet("Please provide valid userId and clientSecret.",403,"Error")
           callbackM(BMSPushResponse)
         }
       }
@@ -644,6 +638,9 @@ function BMSPush(){
         }
         xmlHttp.open(method, url+action, true); // true for asynchronous
         xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
+        if (validateInput(_pushClientSecret)) {
+          xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
+        }
         if (headers) {
           for (let key of Object.keys(headers)) {
             xmlHttp.setRequestHeader(key, headers[key]);
