@@ -22,6 +22,8 @@ var _userId = "";
 var isPushInitialized = false;
 var isDebug = true; /* Enable for debuging*/
 var _isUserIdEnabled = false;
+var _isExtension = false;
+var _gcmSenderId = "";
 var reWriteDomain = "";
 var BMSPushResponse = {};
 var _platform = "";
@@ -45,7 +47,28 @@ function BMSPush(){
       if (validateInput(_pushClientSecret)) {
         printResults("provided a valid client Secret")
       }
-      checkNotificationsupport(initializePush,callback);
+      if(window.navigator.userAgent.indexOf("Chrome") != -1  && chrome.runtime.getManifest != undefined){
+        _isExtension = true;
+      }
+      if (_isExtension == true) {
+        //_isExtension = true;
+        chrome.storage.local.get('deviceId', function (result) {
+          _devId = result.deviceId;
+          if (_devId == "" || _devId == null || _devId == undefined) {
+            _devId = generateUUID();
+          }
+          initializePush(true,callback);
+        });
+
+      } else{
+        //_isExtension = false;
+        if (localStorage.getItem("deviceId") == "" || localStorage.getItem("deviceId") == null) {
+          _devId = generateUUID();
+        }else {
+          _devId = localStorage.getItem("deviceId");
+        }
+        checkNotificationsupport(initializePush,callback);
+      }
     } else {
       printResults("Please provide a valid  appGUID or/and appRegion");
       BMSPushResponseSet("Please provide a valid  appGUID or/and appRegion",404,"Error")
@@ -80,7 +103,6 @@ function BMSPush(){
     navigator.serviceWorker.ready.then(function(reg) {
       reg.pushManager.getSubscription().then(
         function(subscription) {
-
           setTimeout(function() {
             // We have a subcription, so call unsubscribe on it
             subscription.unsubscribe().then(function(successful) {
@@ -94,7 +116,7 @@ function BMSPush(){
               // inform the user that you disabled push
               printResults('Unsubscription error: ', e);
               callback("Error in Unregistration")
-              BMSPushResponseSet("Insufficient Scope. Error in Unregistration",403,"Error")
+              BMSPushResponseSet("Insufficient Scope. Error in Unregistration",401,"Error")
               callbackM(BMSPushResponse)
             })
           },3000);
@@ -102,7 +124,7 @@ function BMSPush(){
           printResults('Error thrown while unsubscribing from push messaging :', e);
           callback("Error in Unregistration")
           var error = "Error thrown while unsubscribing from push messaging :"+e;
-          BMSPushResponseSet(error,403,"Error");
+          BMSPushResponseSet(error,401,"Error");
           callbackM(BMSPushResponse)
         });
       });
@@ -120,7 +142,7 @@ function BMSPush(){
         callback(subscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null. Create tags in your Bluemix App");
-        BMSPushResponseSet("Error.  Tag array cannot be null. Create tags in your Bluemix App",403,"Error");
+        BMSPushResponseSet("Error.  Tag array cannot be null. Create tags in your Bluemix App",401,"Error");
         callbackM(BMSPushResponse)
       }
     };
@@ -136,7 +158,7 @@ function BMSPush(){
         callback(unSubscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null.");
-        BMSPushResponseSet("Error.  Tag array cannot be null.",403,"Error");
+        BMSPushResponseSet("Error.  Tag array cannot be null.",401,"Error");
         callbackM(BMSPushResponse)
       }
     };
@@ -159,7 +181,6 @@ function BMSPush(){
       callback(retrieveTagsAvailable(callbackM));
     };
     var BMSPushResponseSet = function(response, statusCode, error) {
-
       BMSPushResponse.response = response;
       BMSPushResponse.error = error;
       BMSPushResponse.statusCode = statusCode;
@@ -184,44 +205,70 @@ function BMSPush(){
         _isUserIdEnabled = true;
         _userId = userId;
       }
-      printResults("started registration");
-      navigator.serviceWorker.ready.then(function(reg) {
-        reg.pushManager.getSubscription().then(
-          function(subscription) {
-            if (subscription) {
-              registerUsingToken(subscription,callbackM);
-            } else {
-              reg.pushManager.subscribe({
-                userVisibleOnly: true
-              }).then(function(subscription) {
+      if (!_isExtension) {
+        printResults("started registration");
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.pushManager.getSubscription().then(
+            function(subscription) {
+              if (subscription) {
                 registerUsingToken(subscription,callbackM);
-              }).catch(function(error) {
-                if (Notification.permission === 'denied') {
-                  // The user denied the notification permission which
-                  // means we failed to subscribe and the user will need
-                  // to manually change the notification permission to
-                  // subscribe to push messages
-                  printResults('Permission for Notifications was denied');
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
-                } else {
-                  // A problem occurred with the subscription, this can
-                  // often be down to an issue or lack of the gcm_sender_id
-                  // and / or gcm_user_visible_only
-                  printResults('Unable to subscribe to push.', error);
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
-                }
-                callback("Error in registration")
-                callbackM(BMSPushResponse)
-              });
-            }
-          }).catch(function(e) {
-            printResults('Error thrown while subscribing from ' +
-            'push messaging.', e);
-            BMSPushResponseSet(e,403,"Error");
-            callbackM(BMSPushResponse)
+              } else {
+                reg.pushManager.subscribe({
+                  userVisibleOnly: true
+                }).then(function(subscription) {
+                  registerUsingToken(subscription,callbackM);
+                }).catch(function(error) {
+                  if (Notification.permission === 'denied') {
+                    // The user denied the notification permission which
+                    // means we failed to subscribe and the user will need
+                    // to manually change the notification permission to
+                    // subscribe to push messages
+                    printResults('Permission for Notifications was denied');
+                    BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  } else {
+                    // A problem occurred with the subscription, this can
+                    // often be down to an issue or lack of the gcm_sender_id
+                    // and / or gcm_user_visible_only
+                    printResults('Unable to subscribe to push.', error);
+                    BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+                  }
+                  callback("Error in registration")
+                  callbackM(BMSPushResponse)
+                });
+              }
+            }).catch(function(e) {
+              printResults('Error thrown while subscribing from ' +
+              'push messaging.', e);
+              BMSPushResponseSet(e,401,"Error");
+              callbackM(BMSPushResponse)
+            });
           });
-        });
+        }else{
+          get("/settings/chromeAppExtConfPublic",function ( res ) {
+            printResults('previous Device Registration Result :', res);
+            var status = res.status ;
+            if (status == 200){
+              var json = JSON.parse(res.response);
+              _gcmSenderId = json.senderId
+              var senderIds = [_gcmSenderId];
+              chrome.gcm.register(senderIds, function(registrationId){
+                if (chrome.runtime.lastError) {
+                  BMSPushResponseSet(chrome.runtime.lastError,401,"Error");
+                  callbackM(MFPPushResponse)
+                  return;
+                }
+                registerUsingToken(registrationId,callbackM);
+                printResults("The response is : ",registrationId);
+              });
+            } else{
+              printResults("The response is ,",res);
+              BMSPushResponseSet(res.responseText,status,"Error while retrieving the Chrome App/Ext configuration");
+              callbackM(BMSPushResponse)
+            }
+          },null);
+        }
       }
+
       function update () {
 
         function callback(response) {
@@ -229,6 +276,7 @@ function BMSPush(){
         }
         registerPush(_userId, callback);
       }
+
       function initializePush(value, callbackM) {
         if (value === true) {
           BMSPushResponseSet("Successfully initialized Push",200, "")
@@ -275,7 +323,7 @@ function BMSPush(){
             if (!(reg.showNotification)) {
               printResults('Notifications aren\'t supported on service workers.');
               callback("Error in initialize. Notifications aren\'t supported on service workers.")
-              BMSPushResponseSet("Notifications aren\'t supported on service workers.",403,"Error");
+              BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -286,7 +334,7 @@ function BMSPush(){
               printResults('The user has blocked notifications.');
               //return false;
               callback("Error in initialize. The user has blocked notifications.")
-              BMSPushResponseSet("The user has blocked notifications",403,"Error");
+              BMSPushResponseSet("The user has blocked notifications",401,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -294,7 +342,7 @@ function BMSPush(){
             if (!('PushManager' in window)) {
               printResults('Push messaging isn\'t supported.');
               callback("Error in registration. Push messaging isn\'t supported.")
-              BMSPushResponseSet("Push messaging isn\'t supported.",403,"Error")
+              BMSPushResponseSet("Push messaging isn\'t supported.",401,"Error")
               initializePushMcallback(false,callbackM);
             }
             initializePushM(true,callbackM);
@@ -302,13 +350,16 @@ function BMSPush(){
         }else {
           printResults('Service workers aren\'t supported in this browser.');
           callback("Service workers aren\'t supported in this browser.")
-          BMSPushResponseSet("Service workers aren\'t supported in this browser.",403,"Error")
+          BMSPushResponseSet("Service workers aren\'t supported in this browser.",401,"Error")
           initializePushM(false,callbackM);
         }
       }
 
       function callback (response){
         printResults("Response from Bluemix Push Notification Service");
+        if (response === undefined) {
+          response = "";
+        }
         printResults(response);
       }
 
@@ -323,37 +374,81 @@ function BMSPush(){
         var subscriptionStr = JSON.stringify(subscription).replace(/"/g,"\\\"");
         printResults('subscription as string: ', subscriptionStr);
 
-        _devId = generateUUID(subscription);
-        localStorage.setItem("token",subscription);
+        _platform = "";
+        var token;
+        if (!_isExtension) {
+          _devId = localStorage.getItem("deviceId");
+          localStorage.setItem("token",subscription);
 
-        var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
-        var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
-        var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
-        var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
+          var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+          var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+          var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+          var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-        var token = {
-          "endpoint": subscription.endpoint,
-          "userPublicKey": key,
-          "userAuth": authSecret,
+          var token = {
+            "endpoint": subscription.endpoint,
+            "userPublicKey": key,
+            "userAuth": authSecret,
+          }
+          token = JSON.stringify(tokenValue)
+          if(navigator.userAgent.indexOf("Firefox") != -1 ){
+
+            _platform = "WEB_FIREFOX"
+
+          } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
+
+            _platform = "WEB_CHROME"
+          }
+          var device = {}
+          if (_isUserIdEnabled == true){
+            device = {
+              "deviceId": _devId,
+              "token": token,
+              "platform": _platform,
+              "userId":_userId
+            };
+          } else{
+            device = {
+              "deviceId": _devId,
+              "token": token,
+              "platform": _platform
+            };
+          }
+          callRegister(device,callbackM);
+        }else{
+          token = subscription;
+          _platform = "APPEXT_CHROME"
+          var device = {};
+          chrome.storage.local.get('deviceId', function (result) {
+            _devId = result.deviceId;
+
+            if (_isUserIdEnabled == true){
+              device = {
+                "deviceId": _devId,
+                "token": token,
+                "platform": _platform,
+                "userId":_userId
+              };
+            } else{
+              device = {
+                "deviceId": _devId,
+                "token": token,
+                "platform": _platform
+              };
+            }
+            callRegister(device,callbackM);
+          });
+          chrome.storage.local.set({'token':subscription})
+          BMSPushBackground.init();
         }
+      }
 
+      function callRegister (device,callbackM){
         if (_isUserIdEnabled == true){
-          var device = {
-            "deviceId": _devId,
-            "token": JSON.stringify(token),
-            "platform": _platform,
-            "userId":_userId
-          };
           callback(registerDeviceWithUserId(device,callbackM));
         } else{
-          var device = {
-            "deviceId": _devId,
-            "token": JSON.stringify(token),
-            "platform": _platform
-          };
           callback(registerDevice(device, callbackM));
         }
-
       }
       /* Register Device without userId*/
       function registerDevice(device,callbackM) {
@@ -369,7 +464,6 @@ function BMSPush(){
             printResults('Starting New Device Registration  without userid:');
             post("/devices", function ( res ) {
               status = res.status ;
-
               printResults('New Device Registration without userid: Result :', res);
               if (status == 201) {
                 printResults("Successfully registered device");
@@ -489,7 +583,7 @@ function BMSPush(){
           }, device,null);
         } else {
           printResults("Please provide valid userId and clientSecret.")
-          BMSPushResponseSet("Please provide valid userId and clientSecret.",403,"Error")
+          BMSPushResponseSet("Please provide valid userId and clientSecret.",401,"Error")
           callbackM(BMSPushResponse)
         }
       }
@@ -641,11 +735,6 @@ function BMSPush(){
         if (validateInput(_pushClientSecret)) {
           xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
         }
-        if (headers) {
-          for (let key of Object.keys(headers)) {
-            xmlHttp.setRequestHeader(key, headers[key]);
-          }
-        }
         xmlHttp.send(JSON.stringify(data));
       }
 
@@ -678,49 +767,105 @@ function BMSPush(){
       };
       function generateUUID (token){
 
-        if(navigator.userAgent.indexOf("Firefox") != -1 ){
-          _platform = "WEB_FIREFOX"
-        } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
-          _platform = "WEB_CHROME"
+        var dateTime = new Date().getTime();
+        if(window.performance && typeof window.performance.now === "function"){
+          dateTime += performance.now(); //use high-precision timer if available
         }
 
-        if (localStorage.getItem("deviceId") == "" || localStorage.getItem("deviceId") == null) {
+        var hostname = window.location.hostname
+        var arrayData = [];
+        arrayData.push(String(dateTime).hashCode())
+        arrayData.push(String(token).hashCode())
+        arrayData.push(String(hostname).hashCode())
+        arrayData.push(String(_platform).hashCode())
 
-          var dateTime = new Date().getTime();
-          if(window.performance && typeof window.performance.now === "function"){
-            dateTime += performance.now(); //use high-precision timer if available
-          }
-
-          var hostname = window.location.hostname
-          var arrayData = [];
-          arrayData.push(String(dateTime).hashCode())
-          arrayData.push(String(token).hashCode())
-          arrayData.push(String(hostname).hashCode())
-          arrayData.push(String(_platform).hashCode())
-
-          var finalString = arrayData.join("").replace(/[-.]/g , '').replace(/[,.]/g , '')
-          var uuid = "";
-          for( var i=0; i < 32; i++ ){
-            uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
-          }
+        var finalString = arrayData.join("").replace(/[-.]/g , '').replace(/[,.]/g , '')
+        var uuid = "";
+        for( var i=0; i < 32; i++ ){
+          uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
+        }
+        if(_isExtension == true){
+          chrome.storage.local.set({'deviceId':uuid})
+        }else{
           localStorage.setItem("deviceId", uuid);
-          _devId = uuid;
-          return _devId;
-        }else {
-          _devId = localStorage.getItem("deviceId");
-          return _devId;
         }
+        _devId = uuid;
+        return _devId;
       }
 
       function validateInput(stringValue) {
         return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false:true;
       }
 
-      function printResults (Result,a){
+      function printResults (Result,data){
         if (isDebug == true) {
-          if (validateInput(a) && validateInput(Result)){
-            console.log("Response : ",Result," ",a);
-          }
+          var resultString = Result ? Result : " ";
+          var additionalData = data ? data : "";
+          console.log("Response : ",resultString," ",additionalData);
         }
       }
     }
+
+    var BMSPushBackground = {
+      init:function () {},
+      onMessageReceived: function(message) {
+        var str = JSON.stringify(message, null, 4);
+        BMSPushBackground.printResultsExt("Notification Received " +str);
+        var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
+        var mshIconUrl = message.data.iconUrl;
+        if (message.data.iconUrl == null) {
+          var icons = chrome.runtime.getManifest().icons;
+          mshIconUrl = icons["128"];
+          if (mshIconUrl == null) {
+            mshIconUrl = icons["48"];
+            if (mshIconUrl == null){
+              mshIconUrl = icons["16"];
+            }
+          }
+        }
+        chrome.storage.local.set({'url':message.data.url})
+        var notification = {
+          title: msgtitle,
+          iconUrl: mshIconUrl,
+          type: 'basic',
+          message: message.data.alert
+        };
+        chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
+      },
+      getNotificationId:function() {
+        var id = Math.floor(Math.random() * 9007199254740992) + 1;
+        return id.toString();
+      },
+
+      notificationOpened:function(notifiationId) {
+        chrome.notifications.clear(notifiationId, function(){});
+        chrome.storage.local.get('url', function (result) {
+          var openUrl = result.url? result.url : "";
+          var urlObject = {url: openUrl};
+          if (chrome.browser){
+            chrome.browser.openTab(urlObject);
+          }
+          else{
+            chrome.tabs.create(urlObject);
+          }
+          return true;
+        });
+      },
+
+      notification_onClicked:function(notifiationId) {
+        BMSPushBackground.printResultsExt("Closing Notification with Id :",notifiationId);
+        BMSPushBackground.notificationOpened(notifiationId);
+      },
+
+      notifiation_buttonClicked:function(notifiationId, buttonIndex) {
+        BMSPushBackground.printResultsExt("Clicked notifications button with index: ",buttonIndex);
+        BMSPushBackground.notificationOpened(notifiationId);
+      },
+      printResultsExt:function (Result,data){
+        if (isDebug == true) {
+          var resultString = Result ? Result : " ";
+          var additionalData = data ? data : "";
+          console.log("Response : ",resultString," ",additionalData);
+        }
+      }
+    };
