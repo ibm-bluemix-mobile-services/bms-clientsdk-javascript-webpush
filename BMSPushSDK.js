@@ -385,7 +385,7 @@ function BMSPush(){
           var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
           var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-          var token = {
+          var tokenValue = {
             "endpoint": subscription.endpoint,
             "userPublicKey": key,
             "userAuth": authSecret,
