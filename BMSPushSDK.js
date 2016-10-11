@@ -61,7 +61,6 @@ function BMSPush(){
         });
 
       } else{
-        //_isExtension = false;
         if (localStorage.getItem("deviceId") == "" || localStorage.getItem("deviceId") == null) {
           _devId = generateUUID();
         }else {
@@ -809,8 +808,8 @@ function BMSPush(){
     var BMSPushBackground = {
       init:function () {},
       onMessageReceived: function(message) {
-        var str = JSON.stringify(message, null, 4);
-        BMSPushBackground.printResultsExt("Notification Received " +str);
+        var messageString = JSON.stringify(message, null, 4);
+        BMSPushBackground.printResultsExt("Notification Received:" + messageString);
         var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
         var mshIconUrl = message.data.iconUrl;
         if (message.data.iconUrl == null) {
@@ -823,7 +822,8 @@ function BMSPush(){
             }
           }
         }
-        chrome.storage.local.set({'url':message.data.url})
+        var messageUrl =  message.data.url ? message.data.url ? ""
+        chrome.storage.local.set({'messageUrl':messageUrl})
         var notification = {
           title: msgtitle,
           iconUrl: mshIconUrl,
@@ -839,7 +839,7 @@ function BMSPush(){
 
       notificationOpened:function(notifiationId) {
         chrome.notifications.clear(notifiationId, function(){});
-        chrome.storage.local.get('url', function (result) {
+        chrome.storage.local.get('messageUrl', function (result) {
           var openUrl = result.url? result.url : "";
           var urlObject = {url: openUrl};
           if (chrome.browser){
