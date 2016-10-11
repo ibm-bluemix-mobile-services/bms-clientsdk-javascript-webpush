@@ -53,7 +53,7 @@ self.addEventListener('push', function(event) {
   self.addEventListener('notificationclick', function(event) {
     console.log('Notification click: tag ', event.notification.tag);
     var messageUrl = localStorage.getItem("messageUrl");
-    if (messageUrl != "" && messageUrl != null) {
+    if (messageUrl) {
         window.open(messageUrl, '_blank');
     }
     event.notification.close();
