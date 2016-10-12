@@ -819,7 +819,7 @@ function BMSPush(){
             }
           }
         }
-        var messageUrl =  message.data.url ? message.data.url ? ""
+        var messageUrl =  message.data.url ? message.data.url : ""
         chrome.storage.local.set({'messageUrl':messageUrl})
         var notification = {
           title: msgtitle,
