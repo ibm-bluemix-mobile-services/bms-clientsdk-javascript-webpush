@@ -39,8 +39,6 @@ self.addEventListener('push', function(event) {
   var tag = tagJson.tag ? tagJson.tag : "";
   var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
   var payloadData = messageJson.payload ? messageJson.payload : "Example message"
-  var messageUrl = messageJson.url ? messageJson.url : "";
-  localStorage.setItem("messageUrl", messageUrl);
   event.waitUntil(
     self.registration.showNotification(title, {
       body: bodyAlert,
@@ -52,10 +50,6 @@ self.addEventListener('push', function(event) {
 
   self.addEventListener('notificationclick', function(event) {
     console.log('Notification click: tag ', event.notification.tag);
-    var messageUrl = localStorage.getItem("messageUrl");
-    if (messageUrl) {
-        window.open(messageUrl, '_blank');
-    }
     event.notification.close();
   });
 
