@@ -1,12 +1,12 @@
-# bms-clientsdk-javascript-push
+#bms-clientsdk-javascript-push
 
 Enable Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
 notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
 JavaScript Push SDK to further develop your Web applications.
 
-### Initialize SDK
+###Initialize SDK
 
-#### Chrome & Firefox Websites
+####Chrome & Firefox Websites
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
@@ -50,7 +50,8 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
   <script src="BMSPushSDK.js" async></script>
 
 	```
-#### Chrome App and Extensions.
+
+####Chrome App and Extensions.
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
@@ -76,7 +77,7 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
    chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
    ```
 
-## Initializing the Web Push SDK (Chrome, FireFox, Chrome Apps & Chrome Extensions)
+##Initializing the Web Push SDK (Chrome, FireFox, Chrome Apps & Chrome Extensions)
 
 Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
 
@@ -101,7 +102,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
     bmsPush.initialize(params, callback)
 ```
 
-## Registering Web application.
+##Registering Web application.
 
 Use the `register()` API to register the device with Bluemix Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard under Chrome setup .
 
@@ -147,7 +148,7 @@ For `UserId` based registration use the following code snippet,
   })
 ```
 
-## Subscribing for tags.
+##Subscribing for tags.
 
 To get the available tags use the `retrieveAvailableTags()` method.
 
@@ -178,7 +179,7 @@ To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array
   }
 ```
 
-## Unregister from Bluemix Push notifications Service
+##Unregister from Bluemix Push notifications Service
 
 To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
 
