@@ -50,6 +50,7 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
   <script src="BMSPushSDK.js" async></script>
 
 	```
+
 ####Chrome App and Extensions.
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
