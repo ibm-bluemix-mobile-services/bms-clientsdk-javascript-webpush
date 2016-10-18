@@ -54,17 +54,17 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
-[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` (For chrome Extensions) or `manifest_Chrome_App.json` (for Chrome Extensions).
+[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` (For chrome Extensions) or `manifest_Chrome_App.json` (for Chrome Apps).
 
 1. Configure manifest file,
 
-    * For `Chrome App` in the `manifest_Chrome_App.json` file provide `name`, `description` , `icons`.
+    * For `Chrome App` in the `manifest_Chrome_App.json` file provide `name`, `description` , and `icons`.
     * Add the `BMSPushSDK.js` in the `app.background.scripts`.
     * Change the `manifest_Chrome_App.json` to `manifest.json`.
 
     ----------------------------------------------------------------------------------------------------
 
-    * For `Chrome Extensions` in the `manifest_Chrome_Ext.json` file provide `name`, `description` , `icons`.
+    * For `Chrome Extensions` in the `manifest_Chrome_Ext.json` file provide `name`, `description` , and `icons`.
     * Add the `BMSPushSDK.js` in the `background.scripts`.
     * Change the `manifest_Chrome_Ext.json` to `manifest.json`.
 
