@@ -14,17 +14,19 @@ limitations under the License.
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
-var _appId = "";
-var _pushClientSecret = "";
-var _appRegion = "";
-var _devId = "";
-var _userId = "";
+var _appId;
+var _pushClientSecret;
+var _appRegion;
+var _devId;
+var _userId;
 var isPushInitialized = false;
 var isDebug = true; /* Enable for debuging*/
 var _isUserIdEnabled = false;
-var reWriteDomain = "";
+var _isExtension = false;
+var _gcmSenderId;
+var reWriteDomain;
 var BMSPushResponse = {};
-var _platform = "";
+var _platform;
 
 function BMSPush(){
   /**
@@ -32,7 +34,7 @@ function BMSPush(){
   *
   * @param appGUID - The push service App Id value
   * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
-  * @param clientSecret - The push service client secret value -- optional
+  * @param clientSecret - The push service client secret value.
   */
   this.initialize = function(params, callback ) {
     printResults("started initialize");
@@ -45,10 +47,30 @@ function BMSPush(){
       if (validateInput(_pushClientSecret)) {
         printResults("provided a valid client Secret")
       }
-      checkNotificationsupport(initializePush,callback);
+      if(window.navigator.userAgent.indexOf("Chrome") != -1  && chrome.runtime.getManifest){
+        _isExtension = true;
+      }
+      if (_isExtension) {
+        //_isExtension = true;
+        chrome.storage.local.get('deviceId', function (result) {
+          _devId = result.deviceId;
+          if (_devId == "" || _devId == null || _devId == undefined) {
+            _devId = generateUUID();
+          }
+          initializePush(true,callback);
+        });
+
+      } else{
+        if (!localStorage.getItem("deviceId")) {
+          _devId = generateUUID();
+        }else {
+          _devId = localStorage.getItem("deviceId");
+        }
+        checkNotificationsupport(initializePush,callback);
+      }
     } else {
       printResults("Please provide a valid  appGUID or/and appRegion");
-      BMSPushResponseSet("Please provide a valid  appGUID or/and appRegion",404,"Error")
+      setPushResponse("Please provide a valid  appGUID or/and appRegion",404,"Error")
       callback (PushResponse);
     }
   };
@@ -80,7 +102,6 @@ function BMSPush(){
     navigator.serviceWorker.ready.then(function(reg) {
       reg.pushManager.getSubscription().then(
         function(subscription) {
-
           setTimeout(function() {
             // We have a subcription, so call unsubscribe on it
             subscription.unsubscribe().then(function(successful) {
@@ -94,7 +115,7 @@ function BMSPush(){
               // inform the user that you disabled push
               printResults('Unsubscription error: ', e);
               callback("Error in Unregistration")
-              BMSPushResponseSet("Insufficient Scope. Error in Unregistration",403,"Error")
+              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error")
               callbackM(BMSPushResponse)
             })
           },3000);
@@ -102,7 +123,7 @@ function BMSPush(){
           printResults('Error thrown while unsubscribing from push messaging :', e);
           callback("Error in Unregistration")
           var error = "Error thrown while unsubscribing from push messaging :"+e;
-          BMSPushResponseSet(error,403,"Error");
+          setPushResponse(error,401,"Error");
           callbackM(BMSPushResponse)
         });
       });
@@ -120,7 +141,7 @@ function BMSPush(){
         callback(subscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null. Create tags in your Bluemix App");
-        BMSPushResponseSet("Error.  Tag array cannot be null. Create tags in your Bluemix App",403,"Error");
+        setPushResponse("Error.  Tag array cannot be null. Create tags in your Bluemix App",401,"Error");
         callbackM(BMSPushResponse)
       }
     };
@@ -136,7 +157,7 @@ function BMSPush(){
         callback(unSubscribeTags(tagArray,callbackM));
       } else {
         printResults("Error.  Tag array cannot be null.");
-        BMSPushResponseSet("Error.  Tag array cannot be null.",403,"Error");
+        setPushResponse("Error.  Tag array cannot be null.",401,"Error");
         callbackM(BMSPushResponse)
       }
     };
@@ -158,8 +179,7 @@ function BMSPush(){
       printResults("started retrieve available tags");
       callback(retrieveTagsAvailable(callbackM));
     };
-    var BMSPushResponseSet = function(response, statusCode, error) {
-
+    var setPushResponse = function(response, statusCode, error) {
       BMSPushResponse.response = response;
       BMSPushResponse.error = error;
       BMSPushResponse.statusCode = statusCode;
@@ -184,44 +204,70 @@ function BMSPush(){
         _isUserIdEnabled = true;
         _userId = userId;
       }
-      printResults("started registration");
-      navigator.serviceWorker.ready.then(function(reg) {
-        reg.pushManager.getSubscription().then(
-          function(subscription) {
-            if (subscription) {
-              registerUsingToken(subscription,callbackM);
-            } else {
-              reg.pushManager.subscribe({
-                userVisibleOnly: true
-              }).then(function(subscription) {
+      if (!_isExtension) {
+        printResults("started registration");
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.pushManager.getSubscription().then(
+            function(subscription) {
+              if (subscription) {
                 registerUsingToken(subscription,callbackM);
-              }).catch(function(error) {
-                if (Notification.permission === 'denied') {
-                  // The user denied the notification permission which
-                  // means we failed to subscribe and the user will need
-                  // to manually change the notification permission to
-                  // subscribe to push messages
-                  printResults('Permission for Notifications was denied');
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
-                } else {
-                  // A problem occurred with the subscription, this can
-                  // often be down to an issue or lack of the gcm_sender_id
-                  // and / or gcm_user_visible_only
-                  printResults('Unable to subscribe to push.', error);
-                  BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
-                }
-                callback("Error in registration")
-                callbackM(BMSPushResponse)
-              });
-            }
-          }).catch(function(e) {
-            printResults('Error thrown while subscribing from ' +
-            'push messaging.', e);
-            BMSPushResponseSet(e,401,"Error");
-            callbackM(BMSPushResponse)
+              } else {
+                reg.pushManager.subscribe({
+                  userVisibleOnly: true
+                }).then(function(subscription) {
+                  registerUsingToken(subscription,callbackM);
+                }).catch(function(error) {
+                  if (Notification.permission === 'denied') {
+                    // The user denied the notification permission which
+                    // means we failed to subscribe and the user will need
+                    // to manually change the notification permission to
+                    // subscribe to push messages
+                    printResults('Permission for Notifications was denied');
+                    setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                  } else {
+                    // A problem occurred with the subscription, this can
+                    // often be down to an issue or lack of the gcm_sender_id
+                    // and / or gcm_user_visible_only
+                    printResults('Unable to subscribe to push.', error);
+                    setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                  }
+                  callback("Error in registration")
+                  callbackM(BMSPushResponse)
+                });
+              }
+            }).catch(function(e) {
+              printResults('Error thrown while subscribing from ' +
+              'push messaging.', e);
+              setPushResponse(e,401,"Error");
+              callbackM(BMSPushResponse)
+            });
           });
-        });
+        }else{
+          get("/settings/chromeAppExtConfPublic",function ( res ) {
+            printResults('previous Device Registration Result :', res);
+            var status = res.status ;
+            if (status == 200){
+              var json = JSON.parse(res.response);
+              _gcmSenderId = json.senderId
+              var senderIds = [_gcmSenderId];
+              chrome.gcm.register(senderIds, function(registrationId){
+                if (chrome.runtime.lastError) {
+                  setPushResponse(chrome.runtime.lastError,401,"Error");
+                  callbackM(MFPPushResponse)
+                  return;
+                }
+                registerUsingToken(registrationId,callbackM);
+                printResults("The response is : ",registrationId);
+              });
+            } else{
+              printResults("The response is ,",res);
+              setPushResponse(res.responseText,status,"Error while retrieving the Chrome App/Ext configuration");
+              callbackM(BMSPushResponse)
+            }
+          },null);
+        }
       }
+
       function update () {
 
         function callback(response) {
@@ -229,9 +275,10 @@ function BMSPush(){
         }
         registerPush(_userId, callback);
       }
+
       function initializePush(value, callbackM) {
         if (value === true) {
-          BMSPushResponseSet("Successfully initialized Push",200, "")
+          setPushResponse("Successfully initialized Push",200, "")
           printResults("Successfully Initialized")
           isPushInitialized = true;
           callbackM(BMSPushResponse)
@@ -275,7 +322,7 @@ function BMSPush(){
             if (!(reg.showNotification)) {
               printResults('Notifications aren\'t supported on service workers.');
               callback("Error in initialize. Notifications aren\'t supported on service workers.")
-              BMSPushResponseSet("Notifications aren\'t supported on service workers.",401,"Error");
+              setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -286,7 +333,7 @@ function BMSPush(){
               printResults('The user has blocked notifications.');
               //return false;
               callback("Error in initialize. The user has blocked notifications.")
-              BMSPushResponseSet("The user has blocked notifications",401,"Error");
+              setPushResponse("The user has blocked notifications",401,"Error");
               initializePushM(false,callbackM);
             }
 
@@ -294,7 +341,7 @@ function BMSPush(){
             if (!('PushManager' in window)) {
               printResults('Push messaging isn\'t supported.');
               callback("Error in registration. Push messaging isn\'t supported.")
-              BMSPushResponseSet("Push messaging isn\'t supported.",401,"Error")
+              setPushResponse("Push messaging isn\'t supported.",401,"Error")
               initializePushMcallback(false,callbackM);
             }
             initializePushM(true,callbackM);
@@ -302,7 +349,7 @@ function BMSPush(){
         }else {
           printResults('Service workers aren\'t supported in this browser.');
           callback("Service workers aren\'t supported in this browser.")
-          BMSPushResponseSet("Service workers aren\'t supported in this browser.",401,"Error")
+          setPushResponse("Service workers aren\'t supported in this browser.",401,"Error")
           initializePushM(false,callbackM);
         }
       }
@@ -323,37 +370,81 @@ function BMSPush(){
         var subscriptionStr = JSON.stringify(subscription).replace(/"/g,"\\\"");
         printResults('subscription as string: ', subscriptionStr);
 
-        _devId = generateUUID(subscription);
-        localStorage.setItem("token",subscription);
+        _platform = "";
+        var token;
+        if (!_isExtension) {
+          _devId = localStorage.getItem("deviceId");
+          localStorage.setItem("token",subscription);
 
-        var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
-        var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
-        var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
-        var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
+          var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+          var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+          var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+          var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-        var token = {
-          "endpoint": subscription.endpoint,
-          "userPublicKey": key,
-          "userAuth": authSecret,
+          var tokenValue = {
+            "endpoint": subscription.endpoint,
+            "userPublicKey": key,
+            "userAuth": authSecret,
+          }
+          token = JSON.stringify(tokenValue)
+          if(navigator.userAgent.indexOf("Firefox") != -1 ){
+
+            _platform = "WEB_FIREFOX"
+
+          } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
+
+            _platform = "WEB_CHROME"
+          }
+          var device = {}
+          if (_isUserIdEnabled == true){
+            device = {
+              "deviceId": _devId,
+              "token": token,
+              "platform": _platform,
+              "userId":_userId
+            };
+          } else{
+            device = {
+              "deviceId": _devId,
+              "token": token,
+              "platform": _platform
+            };
+          }
+          callRegister(device,callbackM);
+        }else{
+          token = subscription;
+          _platform = "APPEXT_CHROME"
+          var device = {};
+          chrome.storage.local.get('deviceId', function (result) {
+            _devId = result.deviceId;
+
+            if (_isUserIdEnabled == true){
+              device = {
+                "deviceId": _devId,
+                "token": token,
+                "platform": _platform,
+                "userId":_userId
+              };
+            } else{
+              device = {
+                "deviceId": _devId,
+                "token": token,
+                "platform": _platform
+              };
+            }
+            callRegister(device,callbackM);
+          });
+          chrome.storage.local.set({'token':subscription})
+          BMSPushBackground.init();
         }
+      }
 
-        if (_isUserIdEnabled == true){
-          var device = {
-            "deviceId": _devId,
-            "token": JSON.stringify(token),
-            "platform": _platform,
-            "userId":_userId
-          };
+      function callRegister (device,callbackM){
+        if (_isUserIdEnabled){
           callback(registerDeviceWithUserId(device,callbackM));
         } else{
-          var device = {
-            "deviceId": _devId,
-            "token": JSON.stringify(token),
-            "platform": _platform
-          };
           callback(registerDevice(device, callbackM));
         }
-
       }
       /* Register Device without userId*/
       function registerDevice(device,callbackM) {
@@ -369,17 +460,16 @@ function BMSPush(){
             printResults('Starting New Device Registration  without userid:');
             post("/devices", function ( res ) {
               status = res.status ;
-
               printResults('New Device Registration without userid: Result :', res);
               if (status == 201) {
                 printResults("Successfully registered device");
                 printResults("The response is ,",res);
-                BMSPushResponseSet(res,201,"");
+                setPushResponse(res,201,"");
                 callbackM(BMSPushResponse)
               } else{
                 printResults("Error in registering device");
                 printResults("The response is ,",res);
-                BMSPushResponseSet(res,status,"Error in registering device");
+                setPushResponse(res,status,"Error in registering device");
                 callbackM(BMSPushResponse)
               }
               return res;
@@ -387,7 +477,7 @@ function BMSPush(){
           }else if ((status == 406) || (status == 500)) {
             printResults("Error while verifying previuos device registration without userid:");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res,status,"Error while verifying previuos device registration");
+            setPushResponse(res,status,"Error while verifying previuos device registration");
             callbackM(BMSPushResponse)
             return res;
           } else  {
@@ -402,19 +492,19 @@ function BMSPush(){
                 if (status == 201) {
                   printResults("Successfully registered device without userid:");
                   printResults("The response is ,",res);
-                  BMSPushResponseSet(res,201,"");
+                  setPushResponse(res,201,"");
                   callbackM(BMSPushResponse)
                 } else{
                   printResults("Error in registering device without userid:");
                   printResults("The response is ,",res);
-                  BMSPushResponseSet(res,status,"Error in registering device");
+                  setPushResponse(res,status,"Error in registering device");
                   callbackM(BMSPushResponse)
                 }
                 return res;
               },device,null);
             } else{
               printResults("Device is already registered and device registration parameters not changed. without userid:");
-              BMSPushResponseSet(res,201,"");
+              setPushResponse(res,201,"");
               callbackM(BMSPushResponse)
               return res;
             }
@@ -444,21 +534,19 @@ function BMSPush(){
                 if (status == 201) {
                   printResults("Successfully registered device");
                   printResults("The response is ,",res);
-                  BMSPushResponseSet(res.responseText,201,"");
+                  setPushResponse(res.responseText,201,"");
                   callbackM(BMSPushResponse)
                 } else{
                   printResults("Erron in registering device");
                   printResults("The response is ,",res);
-                  BMSPushResponseSet(res.responseText,status,"Error in registering device");
+                  setPushResponse(res.responseText,status,"Error in registering device");
                   callbackM(BMSPushResponse)
                 }
                 return res;
-              },device,{
-                "clientSecret": _pushClientSecret
-              });
+              },device,null);
             }else if ((status == 406) || (status == 500)) {
               printResults("The response is ,",res);
-              BMSPushResponseSet(res.responseText,status,"Error while verifying previuos device registration");
+              setPushResponse(res.responseText,status,"Error while verifying previuos device registration");
               callbackM(BMSPushResponse)
               return res;
             } else  {
@@ -472,30 +560,26 @@ function BMSPush(){
                   var status = res.status;
                   if (status == 201) {
                     printResults("The response is ,",res);
-                    BMSPushResponseSet(res.responseText,201,"");
+                    setPushResponse(res.responseText,201,"");
                     callbackM(BMSPushResponse)
                   } else{
                     printResults("The response is ,",res);
-                    BMSPushResponseSet(res.responseText,status,"Error in registering device");
+                    setPushResponse(res.responseText,status,"Error in registering device");
                     callbackM(BMSPushResponse)
                   }
                   return res;
-                },device,{
-                  "clientSecret": _pushClientSecret
-                });
+                },device,null);
               } else{
                 printResults("Device is already registered and device registration parameters not changed.");
-                BMSPushResponseSet(res.responseText,201,"");
+                setPushResponse(res.responseText,201,"");
                 callbackM(BMSPushResponse)
                 return res;
               }
             }
-          }, device,{
-            "clientSecret": _pushClientSecret
-          });
+          }, device,null);
         } else {
           printResults("Please provide valid userId and clientSecret.")
-          BMSPushResponseSet("Please provide valid userId and clientSecret.",401,"Error")
+          setPushResponse("Please provide valid userId and clientSecret.",401,"Error")
           callbackM(BMSPushResponse)
         }
       }
@@ -508,13 +592,13 @@ function BMSPush(){
           var status = response.status;
           if (status == 204) {
             printResults("Successfully unregistered the device");
-            BMSPushResponseSet(response.responseText,204,"");
+            setPushResponse(response.responseText,204,"");
             localStorage.setItem("deviceId","");
             callbackM(BMSPushResponse)
             return response;
           } else{
             printResults("Error in  unregistering the device");
-            BMSPushResponseSet(response.responseText,status,"Error")
+            setPushResponse(response.responseText,status,"Error")
             callbackM(BMSPushResponse)
             return response;
           }
@@ -534,12 +618,12 @@ function BMSPush(){
           if (status >= 200 && status <= 300)  {
             printResults("Successfully subscribed to tags -");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"");
+            setPushResponse(res.responseText,status,"");
             callbackM(BMSPushResponse)
           } else{
             printResults("Error while subscribing to tags :");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"Error while subscribing to tags :");
+            setPushResponse(res.responseText,status,"Error while subscribing to tags :");
             callbackM(BMSPushResponse)
           }
           return res;
@@ -559,12 +643,12 @@ function BMSPush(){
           if (status >= 200 && status <= 300)  {
             printResults("Successfully Un-subscribed to tags -");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"");
+            setPushResponse(res.responseText,status,"");
             callbackM(BMSPushResponse)
           } else{
             printResults("Error while Un-subscribing to tags :");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"Error while Un-subscribing to tags :");
+            setPushResponse(res.responseText,status,"Error while Un-subscribing to tags :");
             callbackM(BMSPushResponse)
           }
           return res;
@@ -581,12 +665,12 @@ function BMSPush(){
           if (status >= 200 && status <= 300)  {
             printResults("Successfully retrieved subscribed tags");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"");
+            setPushResponse(res.responseText,status,"");
             callbackM(BMSPushResponse)
           } else{
             printResults("Error while retrieve subscribed tags :");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"Error while retrieve subscribed tags :");
+            setPushResponse(res.responseText,status,"Error while retrieve subscribed tags :");
             callbackM(BMSPushResponse)
           }
           return res;
@@ -602,12 +686,12 @@ function BMSPush(){
           if (status >= 200 && status <= 300)  {
             printResults("Successfully retrieved available tags");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"");
+            setPushResponse(res.responseText,status,"");
             callbackM(BMSPushResponse)
           } else{
             printResults("Error while retrieve available tags :");
             printResults("The response is ,",res);
-            BMSPushResponseSet(res.responseText,status,"Error while retrieve available tags :");
+            setPushResponse(res.responseText,status,"Error while retrieve available tags :");
             callbackM(BMSPushResponse)
           }
           return res;
@@ -644,10 +728,8 @@ function BMSPush(){
         }
         xmlHttp.open(method, url+action, true); // true for asynchronous
         xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
-        if (headers) {
-          for (let key of Object.keys(headers)) {
-            xmlHttp.setRequestHeader(key, headers[key]);
-          }
+        if (validateInput(_pushClientSecret)) {
+          xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
         }
         xmlHttp.send(JSON.stringify(data));
       }
@@ -681,49 +763,106 @@ function BMSPush(){
       };
       function generateUUID (token){
 
-        if(navigator.userAgent.indexOf("Firefox") != -1 ){
-          _platform = "WEB_FIREFOX"
-        } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
-          _platform = "WEB_CHROME"
+        var dateTime = new Date().getTime();
+        if(window.performance && typeof window.performance.now === "function"){
+          dateTime += performance.now(); //use high-precision timer if available
         }
 
-        if (localStorage.getItem("deviceId") == "" || localStorage.getItem("deviceId") == null) {
+        var hostname = window.location.hostname
+        var arrayData = [];
+        arrayData.push(String(dateTime).hashCode())
+        arrayData.push(String(token).hashCode())
+        arrayData.push(String(hostname).hashCode())
+        arrayData.push(String(_platform).hashCode())
 
-          var dateTime = new Date().getTime();
-          if(window.performance && typeof window.performance.now === "function"){
-            dateTime += performance.now(); //use high-precision timer if available
-          }
-
-          var hostname = window.location.hostname
-          var arrayData = [];
-          arrayData.push(String(dateTime).hashCode())
-          arrayData.push(String(token).hashCode())
-          arrayData.push(String(hostname).hashCode())
-          arrayData.push(String(_platform).hashCode())
-
-          var finalString = arrayData.join("").replace(/[-.]/g , '').replace(/[,.]/g , '')
-          var uuid = "";
-          for( var i=0; i < 32; i++ ){
-            uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
-          }
+        var finalString = arrayData.join("").replace(/[-.]/g , '').replace(/[,.]/g , '')
+        var uuid = "";
+        for( var i=0; i < 32; i++ ){
+          uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
+        }
+        if(_isExtension){
+          chrome.storage.local.set({'deviceId':uuid})
+        }else{
           localStorage.setItem("deviceId", uuid);
-          _devId = uuid;
-          return _devId;
-        }else {
-          _devId = localStorage.getItem("deviceId");
-          return _devId;
         }
+        _devId = uuid;
+        return _devId;
       }
 
       function validateInput(stringValue) {
         return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false:true;
       }
 
-      function printResults (Result,a){
+      function printResults (Result,data){
         if (isDebug == true) {
-          if (validateInput(a) && validateInput(Result)){
-            console.log("Response : ",Result," ",a);
-          }
+          var resultString = Result ? Result : " ";
+          var additionalData = data ? data : "";
+          console.log("Response : ",resultString," ",additionalData);
         }
       }
     }
+
+    var BMSPushBackground = {
+      init:function () {},
+      onMessageReceived: function(message) {
+        var messageString = JSON.stringify(message, null, 4);
+        BMSPushBackground.printResultsExt("Notification Received:" + messageString);
+        var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
+        var mshIconUrl = message.data.iconUrl;
+        if (message.data.iconUrl == null) {
+          var icons = chrome.runtime.getManifest().icons;
+          mshIconUrl = icons["128"];
+          if (mshIconUrl == null) {
+            mshIconUrl = icons["48"];
+            if (mshIconUrl == null){
+              mshIconUrl = icons["16"];
+            }
+          }
+        }
+        var messageUrl =  message.data.url ? message.data.url : ""
+        chrome.storage.local.set({'messageUrl':messageUrl})
+        var notification = {
+          title: msgtitle,
+          iconUrl: mshIconUrl,
+          type: 'basic',
+          message: message.data.alert
+        };
+        chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
+      },
+      getNotificationId:function() {
+        var id = Math.floor(Math.random() * 9007199254740992) + 1;
+        return id.toString();
+      },
+
+      notificationOpened:function(notifiationId) {
+        chrome.notifications.clear(notifiationId, function(){});
+        chrome.storage.local.get('messageUrl', function (result) {
+          var openUrl = result.url? result.url : "";
+          var urlObject = {url: openUrl};
+          if (chrome.browser){
+            chrome.browser.openTab(urlObject);
+          }
+          else{
+            chrome.tabs.create(urlObject);
+          }
+          return true;
+        });
+      },
+
+      notification_onClicked:function(notifiationId) {
+        BMSPushBackground.printResultsExt("Closing Notification with Id :",notifiationId);
+        BMSPushBackground.notificationOpened(notifiationId);
+      },
+
+      notifiation_buttonClicked:function(notifiationId, buttonIndex) {
+        BMSPushBackground.printResultsExt("Clicked notifications button with index: ",buttonIndex);
+        BMSPushBackground.notificationOpened(notifiationId);
+      },
+      printResultsExt:function (Result,data){
+        if (isDebug) {
+          var resultString = Result ? Result : " ";
+          var additionalData = data ? data : "";
+          console.log("Response : ",resultString," ",additionalData);
+        }
+      }
+    };

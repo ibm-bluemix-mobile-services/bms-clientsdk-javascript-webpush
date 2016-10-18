@@ -39,7 +39,6 @@ self.addEventListener('push', function(event) {
   var tag = tagJson.tag ? tagJson.tag : "";
   var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
   var payloadData = messageJson.payload ? messageJson.payload : "Example message"
-
   event.waitUntil(
     self.registration.showNotification(title, {
       body: bodyAlert,
@@ -55,8 +54,5 @@ self.addEventListener('push', function(event) {
   });
 
   self.addEventListener('pushsubscriptionchange', function() {
-  // do something, usually resubscribe to push and
-  // send the new subscription details back to the
-  // server via XHR or Fetch
   ports.postMessage("Update the registration")
 });
