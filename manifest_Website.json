@@ -1,4 +1,3 @@
-// Chrome and Firefox website
 {
   "name": "YOUR_SITE_NAME",
   "gcm_sender_id": "YOUR_GOOGLE_PROJECT_NUMBER"
