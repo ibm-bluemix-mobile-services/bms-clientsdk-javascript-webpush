@@ -27,6 +27,7 @@ var _gcmSenderId;
 var reWriteDomain;
 var BMSPushResponse = {};
 var _platform;
+var _websitePushIDSafari;
 
 function BMSPush(){
   /**
@@ -42,6 +43,7 @@ function BMSPush(){
     _appId = params.appGUID ? params.appGUID : "";
     _appRegion = params.appRegion ? params.appRegion : "";
     _pushClientSecret = params.clientSecret ? params.clientSecret : "";
+    _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
     
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
@@ -238,44 +240,81 @@ function BMSPush(){
         _userId = userId;
       }
       if (!_isExtension) {
-        printLog("started registration");
-        navigator.serviceWorker.ready.then(function(reg) {
-          reg.pushManager.getSubscription().then(
-            function(subscription) {
-              if (subscription) {
-                registerUsingToken(subscription,callbackM);
-              } else {
-                reg.pushManager.subscribe({
-                  userVisibleOnly: true
-                }).then(function(subscription) {
-                  registerUsingToken(subscription,callbackM);
-                }).catch(function(error) {
-                  if (Notification.permission === 'denied') {
-                    // The user denied the notification permission which
-                    // means we failed to subscribe and the user will need
-                    // to manually change the notification permission to
-                    // subscribe to push messages
-                    printLog('Permission for Notifications was denied');
-                    setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
-                  } else {
-                    // A problem occurred with the subscription, this can
-                    // often be down to an issue or lack of the gcm_sender_id
-                    // and / or gcm_user_visible_only
-                    printLog('Unable to subscribe to push.', error);
-                    setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
-                  }
-                  callback("Error in registration")
-                  callbackM(BMSPushResponse)
+        var userAgentOfBrowser = navigator.userAgent.toLowerCase();
+        printLog("started registration for the browser " + userAgentOfBrowser);
+        if(userAgentOfBrowser.indexOf('safari') >= 0) {
+        	var resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
+        	if(resultSafariPermission.permission === "default") {
+        		//User never asked before for permission
+        		var base_url = "https://imfpushsafariwebpush" + _appRegion +  "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+        		printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari );
+        		window.safari.pushNotification.requestPermission(base_url,
+        				_websitePushIDSafari,
+        				{"deviceId": localStorage.getItem("deviceId"), "userId": "myuserId" },
+        				function(resultRequestPermission){
+        					if(resultRequestPermission.permission === "granted") {
+        						printLog("The user has granted the permission to receive notifications");
+        						registerUsingToken(resultRequestPermission.deviceToken, callbackM);
+        					}
+        				});
+        		
+        	}
+        	else if(resultSafariPermission.permission === "denied") {
+        		// The user denied the notification permission which
+                // means we failed to subscribe and the user will need
+                // to manually change the notification permission to
+                // subscribe to push messages
+                printLog('Permission for Notifications was denied');
+                setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                callback("Error in registration");
+                callbackM(BMSPushResponse);
+        	}
+        	else {
+        		//Already granted the permission
+        		registerUsingToken(resultSafariPermission.deviceToken, callbackM);
+        	}
+        }
+        else {
+        	navigator.serviceWorker.ready.then(function(reg) {
+                reg.pushManager.getSubscription().then(
+                  function(subscription) {
+                    if (subscription) {
+                      registerUsingToken(subscription,callbackM);
+                    } else {
+                      reg.pushManager.subscribe({
+                        userVisibleOnly: true
+                      }).then(function(subscription) {
+                        registerUsingToken(subscription,callbackM);
+                      }).catch(function(error) {
+                        if (Notification.permission === 'denied') {
+                          // The user denied the notification permission which
+                          // means we failed to subscribe and the user will need
+                          // to manually change the notification permission to
+                          // subscribe to push messages
+                          printLog('Permission for Notifications was denied');
+                          setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                        } else {
+                          // A problem occurred with the subscription, this can
+                          // often be down to an issue or lack of the gcm_sender_id
+                          // and / or gcm_user_visible_only
+                          printLog('Unable to subscribe to push.', error);
+                          setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                        }
+                        callback("Error in registration")
+                        callbackM(BMSPushResponse)
+                      });
+                    }
+                  }).catch(function(e) {
+                    printLog('Error thrown while subscribing from ' +
+                    'push messaging.', e);
+                    setPushResponse(e,401,"Error");
+                    callbackM(BMSPushResponse)
+                  });
                 });
-              }
-            }).catch(function(e) {
-              printLog('Error thrown while subscribing from ' +
-              'push messaging.', e);
-              setPushResponse(e,401,"Error");
-              callbackM(BMSPushResponse)
-            });
-          });
-        }else{
+        }
+        		
+        
+      }else{
           get("/settings/chromeAppExtConfPublic",function ( res ) {
             printLog('previous Device Registration Result :', res);
             var status = res.status ;
@@ -339,8 +378,9 @@ function BMSPush(){
 
       function checkNotificationSupport(initializePushM,callbackM) {
         printLog("Started checking the notification compatibility");
+        var userAgentOfBrowser = navigator.userAgent.toLowerCase();
         if ('serviceWorker' in navigator) {
-          if(navigator.userAgent.indexOf("Firefox") != -1 )
+          if(userAgentOfBrowser.indexOf("firefox") != -1 )
           {
             sendMessage("Set Update Port")
           }
@@ -379,7 +419,13 @@ function BMSPush(){
             }
             initializePushM(true,callbackM);
           })
-        }else {
+        }
+        else if(userAgentOfBrowser.indexOf('safari') != -1) {
+        	//Service workers are not supported by Safari
+        	//TODO: Check for safari version
+        	initializePushM(false,callbackM);
+        }
+        else {
           printLog('Service workers aren\'t supported in this browser.');
           callback("Service workers aren\'t supported in this browser.")
           setPushResponse("Service workers aren\'t supported in this browser.",401,"Error")
@@ -414,19 +460,30 @@ function BMSPush(){
           var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
           var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-          var tokenValue = {
-            "endpoint": subscription.endpoint,
-            "userPublicKey": key,
-            "userAuth": authSecret,
+          
+          var userAgentOfBrowser = navigator.userAgent.toLowerCase();
+          if(userAgentOfBrowser.indexOf('safari')) {
+        	  _platform = "WEB_SAFARI";
+        	  token = subscription; // This is a string value;
+        	  
+        	  printLog('The device token from safari is ' + token);
           }
-          token = JSON.stringify(tokenValue)
-          if(navigator.userAgent.indexOf("Firefox") != -1 ){
+          else {
+        	  var tokenValue = {
+        	            "endpoint": subscription.endpoint,
+        	            "userPublicKey": key,
+        	            "userAuth": authSecret,
+        	          };
+        	  token = JSON.stringify(tokenValue);
+          }
+          
+          if(userAgentOfBrowser.indexOf("firefox") != -1 ){
 
-            _platform = "WEB_FIREFOX"
+            _platform = "WEB_FIREFOX";
 
-          } else if(navigator.userAgent.indexOf("Chrome") != -1 ){
+          } else if(userAgentOfBrowser.indexOf("chrome") != -1 ){
 
-            _platform = "WEB_CHROME"
+            _platform = "WEB_CHROME";
           }
           var device = {}
           if (_isUserIdEnabled == true){
@@ -443,7 +500,15 @@ function BMSPush(){
               "platform": _platform
             };
           }
-          callRegister(device,callbackM);
+          //Safari browser calls register on push ... No need to call it explicitly
+          if(_platform === "WEB_SAFARI") {
+        	  setPushResponse("", 201);
+        	  callbackM(BMSPushResponse);
+          }
+          else {
+        	  callRegister(device,callbackM);
+          }
+          
         }else{
           token = subscription;
           _platform = "APPEXT_CHROME"
@@ -841,18 +906,6 @@ function BMSPush(){
         var messageString = JSON.stringify(message, null, 4);
         BMSPushBackground.printLogExt("Notification Received:" + messageString);
         var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
-        function createChromeNotification(msgIconUrl){
-        	var messageUrl =  message.data.url ? message.data.url : ""
-                chrome.storage.local.set({'messageUrl':messageUrl})
-                var notification = {
-                  title: msgtitle,
-                  iconUrl: msgIconUrl,
-                  type: 'basic',
-                  message: message.data.alert
-                };
-                chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
-        }
-        
         var mshIconUrl = message.data.iconUrl;
         if (message.data.iconUrl == null) {
           var icons = chrome.runtime.getManifest().icons;
@@ -863,20 +916,16 @@ function BMSPush(){
               mshIconUrl = icons["16"];
             }
           }
-          createChromeNotification(mshIconUrl);
         }
-        else {
-        	//Download the image as BLOB and create a BLOB URL
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", message.data.iconUrl);
-            xhr.responseType = "blob";
-            xhr.onload = function(e) {
-            	var urlCreator = window.URL || window.webkitURL;
-            	var imageUrl = urlCreator.createObjectURL(this.response);
-            	createChromeNotification(imageUrl);
-            };
-            xhr.send();
-        }
+        var messageUrl =  message.data.url ? message.data.url : ""
+        chrome.storage.local.set({'messageUrl':messageUrl})
+        var notification = {
+          title: msgtitle,
+          iconUrl: mshIconUrl,
+          type: 'basic',
+          message: message.data.alert
+        };
+        chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
       },
       getNotificationId:function() {
         var id = Math.floor(Math.random() * 9007199254740992) + 1;
