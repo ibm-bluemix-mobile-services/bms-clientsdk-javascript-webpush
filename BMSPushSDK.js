@@ -818,7 +818,7 @@ function BMSPush(){
 
       function callPushRest(method, callback, action, data, headers)
       {
-        var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
+        var url = 'https://imfpushsafariwebpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
           if (xmlHttp.readyState == 4 )
@@ -906,6 +906,18 @@ function BMSPush(){
         var messageString = JSON.stringify(message, null, 4);
         BMSPushBackground.printLogExt("Notification Received:" + messageString);
         var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
+        function createChromeNotification(msgIconUrl){
+        	var messageUrl =  message.data.url ? message.data.url : ""
+                chrome.storage.local.set({'messageUrl':messageUrl})
+                var notification = {
+                  title: msgtitle,
+                  iconUrl: msgIconUrl,
+                  type: 'basic',
+                  message: message.data.alert
+                };
+                chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
+        }
+        
         var mshIconUrl = message.data.iconUrl;
         if (message.data.iconUrl == null) {
           var icons = chrome.runtime.getManifest().icons;
@@ -916,16 +928,20 @@ function BMSPush(){
               mshIconUrl = icons["16"];
             }
           }
+          createChromeNotification(mshIconUrl);
         }
-        var messageUrl =  message.data.url ? message.data.url : ""
-        chrome.storage.local.set({'messageUrl':messageUrl})
-        var notification = {
-          title: msgtitle,
-          iconUrl: mshIconUrl,
-          type: 'basic',
-          message: message.data.alert
-        };
-        chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
+        else {
+        	//Download the image as BLOB and create a BLOB URL
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", message.data.iconUrl);
+            xhr.responseType = "blob";
+            xhr.onload = function(e) {
+            	var urlCreator = window.URL || window.webkitURL;
+            	var imageUrl = urlCreator.createObjectURL(this.response);
+            	createChromeNotification(imageUrl);
+            };
+            xhr.send();
+        }
       },
       getNotificationId:function() {
         var id = Math.floor(Math.random() * 9007199254740992) + 1;
