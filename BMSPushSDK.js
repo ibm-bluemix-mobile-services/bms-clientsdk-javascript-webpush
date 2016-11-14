@@ -36,6 +36,7 @@ function BMSPush(){
   * @param appGUID - The push service App Id value
   * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
   * @param clientSecret - The push service client secret value.
+  * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
   */
   this.initialize = function(params, callback ) {
     printLog("Enter - initialize");
@@ -246,11 +247,11 @@ function BMSPush(){
         	var resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
         	if(resultSafariPermission.permission === "default") {
         		//User never asked before for permission
-        		var base_url = "https://imfpushsafariwebpush" + _appRegion +  "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+        		var base_url = "https://imfpush" + _appRegion +  "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
         		printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari );
         		window.safari.pushNotification.requestPermission(base_url,
         				_websitePushIDSafari,
-        				{"deviceId": localStorage.getItem("deviceId"), "userId": "myuserId" },
+        				{"deviceId": localStorage.getItem("deviceId"), "userId": userId },
         				function(resultRequestPermission){
         					if(resultRequestPermission.permission === "granted") {
         						printLog("The user has granted the permission to receive notifications");
@@ -818,7 +819,7 @@ function BMSPush(){
 
       function callPushRest(method, callback, action, data, headers)
       {
-        var url = 'https://imfpushsafariwebpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
+        var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
           if (xmlHttp.readyState == 4 )
@@ -979,4 +980,4 @@ function BMSPush(){
           console.log("Response : ",resultString," ",additionalData);
         }
       }
-    };
+};
