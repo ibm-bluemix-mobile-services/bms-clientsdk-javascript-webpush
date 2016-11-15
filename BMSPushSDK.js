@@ -243,7 +243,7 @@ function BMSPush(){
       if (!_isExtension) {
         var userAgentOfBrowser = navigator.userAgent.toLowerCase();
         printLog("started registration for the browser " + userAgentOfBrowser);
-        if(userAgentOfBrowser.indexOf('safari') >= 0) {
+        if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
         	var resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
         	if(resultSafariPermission.permission === "default") {
         		//User never asked before for permission
@@ -463,7 +463,7 @@ function BMSPush(){
 
           
           var userAgentOfBrowser = navigator.userAgent.toLowerCase();
-          if(userAgentOfBrowser.indexOf('safari')) {
+          if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
         	  _platform = "WEB_SAFARI";
         	  token = subscription; // This is a string value;
         	  
