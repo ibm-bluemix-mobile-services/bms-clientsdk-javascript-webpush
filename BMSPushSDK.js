@@ -114,11 +114,19 @@ function BMSPush(){
 
       reg.pushManager.getSubscription().then(
         function(subscription) {
+          if (!subscription) {
+                // We aren’t subscribed to push, so set UI
+                // to allow the user to enable push
+        		setPushResponse("The device is not enabled for push notifications",0,"Error");
+        		callbackM(BMSPushResponse);
+        		printLog("Exit - unRegisterDevice");
+        		return;
+          }
+        	
           setTimeout(function() {
             // We have a subcription, so call unsubscribe on it
             subscription.unsubscribe().then(function(successful) {
               printLog('Successfully unRegistered from GCM push notification');
-              printLog('Start Unregistering from the Bluemix Push')
               callback (unRegisterDevice(callbackM));
             }).catch(function(e) {
               // We failed to unsubscribe, this can lead to
@@ -127,8 +135,8 @@ function BMSPush(){
               // inform the user that you disabled push
               printLog('Unsubscription error: ', e);
               callback("Error in Unregistration")
-              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error")
-              callbackM(BMSPushResponse)
+              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error");
+              callbackM(BMSPushResponse);
             })
           },3000);
         }).catch(function(e) {
@@ -136,7 +144,7 @@ function BMSPush(){
           callback("Error in Unregistration")
           var error = "Error thrown while unsubscribing from push messaging :"+e;
           setPushResponse(error,401,"Error");
-          callbackM(BMSPushResponse)
+          callbackM(BMSPushResponse);
         });
       });
       printLog("Exit - unRegisterDevice");
@@ -150,12 +158,18 @@ function BMSPush(){
     this.subscribe = function(tagArray,callbackM){
 
       printLog("Enter - Subscribing tags");
+      if(!isPushInitialized) {
+    	  setPushResponse("Initialize before using this function",0,"Not initialized");
+    	  callbackM(BMSPushResponse);
+    	  printLog("Exit - Subscribing tags");
+    	  return;
+      }
       if (tagArray.length > 0) {
         callback(subscribeTags(tagArray,callbackM));
       } else {
         printLog("Error - Tag array cannot be null. Create tags in your Bluemix App");
         setPushResponse("Error - Tag array cannot be null. Create tags in your Bluemix App",401,"Error");
-        callbackM(BMSPushResponse)
+        callbackM(BMSPushResponse);
       }
       printLog("Exit - Subscribing tags");
     };
@@ -167,6 +181,13 @@ function BMSPush(){
     */
     this.unSubscribe = function(tagArray,callbackM){
       printLog("Enter - UnSubscribing tags");
+      if(!isPushInitialized) {
+    	  setPushResponse("Initialize before using this function",0,"Not initialized");
+    	  callbackM(BMSPushResponse);
+    	  printLog("Exit - UnSubscribing tags");
+    	  return;
+      }
+      
       if (tagArray.length > 0) {
         callback(unSubscribeTags(tagArray,callbackM));
       } else {
@@ -266,7 +287,7 @@ function BMSPush(){
                 // to manually change the notification permission to
                 // subscribe to push messages
                 printLog('Permission for Notifications was denied');
-                setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
+                setPushResponse("The user denied permission for Safari Push Notifications.",401,"Error");
                 callback("Error in registration");
                 callbackM(BMSPushResponse);
         	}
@@ -351,12 +372,13 @@ function BMSPush(){
 
       function initializePush(value, callbackM) {
         if (value === true) {
-          setPushResponse("Successfully initialized Push",200, "")
-          printLog("Successfully Initialized")
+          setPushResponse("Successfully initialized Push",200, "");
+          printLog("Successfully Initialized");
           isPushInitialized = true;
           callbackM(BMSPushResponse)
         } else {
           printLog("Error in Initializing push");
+          setPushResponse("Error in Initializing push",0, "Error");
           isPushInitialized = false;
           callbackM(BMSPushResponse)
         }
@@ -424,7 +446,7 @@ function BMSPush(){
         else if(userAgentOfBrowser.indexOf('safari') != -1) {
         	//Service workers are not supported by Safari
         	//TODO: Check for safari version
-        	initializePushM(false,callbackM);
+        	initializePushM(true,callbackM);
         }
         else {
           printLog('Service workers aren\'t supported in this browser.');
@@ -623,7 +645,13 @@ function BMSPush(){
           get("/devices/"+devId,function ( res ) {
             printLog('previous Device Registration Result :', res);
             var status = res.status ;
-            if(status == 404){
+            if(status == 0) {
+            	//CORS issue
+            	setPushResponse("",status,"Error in registering device");
+                callbackM(BMSPushResponse);
+                return res;
+            }
+            else if(status == 404){
               printLog('Starting New Device Registration ');
               post("/devices", function ( res ) {
 
@@ -822,8 +850,9 @@ function BMSPush(){
         var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
-          if (xmlHttp.readyState == 4 )
-          callback(xmlHttp);
+          if (xmlHttp.readyState == 4 ) {
+        	  callback(xmlHttp);
+          }
         }
         xmlHttp.open(method, url + action, true); // true for asynchronous
         xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
