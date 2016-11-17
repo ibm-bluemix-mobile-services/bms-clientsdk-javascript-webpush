@@ -110,43 +110,51 @@ function BMSPush(){
   this.unRegisterDevice = function(callbackM){
     printLog("Enter - unRegisterDevice");
 
-    navigator.serviceWorker.ready.then(function(reg) {
+    var userAgentOfBrowser = navigator.userAgent.toLowerCase();
+    printLog("started unregistration for the browser " + userAgentOfBrowser);
+    if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
+    	callback (unRegisterDevice(callbackM));
+    }
+    else {
+    	navigator.serviceWorker.ready.then(function(reg) {
 
-      reg.pushManager.getSubscription().then(
-        function(subscription) {
-          if (!subscription) {
-                // We aren’t subscribed to push, so set UI
-                // to allow the user to enable push
-        		setPushResponse("The device is not enabled for push notifications",0,"Error");
-        		callbackM(BMSPushResponse);
-        		printLog("Exit - unRegisterDevice");
-        		return;
-          }
-        	
-          setTimeout(function() {
-            // We have a subcription, so call unsubscribe on it
-            subscription.unsubscribe().then(function(successful) {
-              printLog('Successfully unRegistered from GCM push notification');
-              callback (unRegisterDevice(callbackM));
-            }).catch(function(e) {
-              // We failed to unsubscribe, this can lead to
-              // an unusual state, so may be best to remove
-              // the subscription id from your data store and
-              // inform the user that you disabled push
-              printLog('Unsubscription error: ', e);
-              callback("Error in Unregistration")
-              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error");
-              callbackM(BMSPushResponse);
-            })
-          },3000);
-        }).catch(function(e) {
-          printLog('Error thrown while unsubscribing from push messaging :', e);
-          callback("Error in Unregistration")
-          var error = "Error thrown while unsubscribing from push messaging :"+e;
-          setPushResponse(error,401,"Error");
-          callbackM(BMSPushResponse);
-        });
-      });
+    	      reg.pushManager.getSubscription().then(
+    	        function(subscription) {
+    	          if (!subscription) {
+    	                // We aren’t subscribed to push, so set UI
+    	                // to allow the user to enable push
+    	        		setPushResponse("The device is not enabled for push notifications",0,"Error");
+    	        		callbackM(BMSPushResponse);
+    	        		printLog("Exit - unRegisterDevice");
+    	        		return;
+    	          }
+    	        	
+    	          setTimeout(function() {
+    	            // We have a subcription, so call unsubscribe on it
+    	            subscription.unsubscribe().then(function(successful) {
+    	              printLog('Successfully unRegistered from GCM push notification');
+    	              callback (unRegisterDevice(callbackM));
+    	            }).catch(function(e) {
+    	              // We failed to unsubscribe, this can lead to
+    	              // an unusual state, so may be best to remove
+    	              // the subscription id from your data store and
+    	              // inform the user that you disabled push
+    	              printLog('Unsubscription error: ', e);
+    	              callback("Error in Unregistration")
+    	              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error");
+    	              callbackM(BMSPushResponse);
+    	            })
+    	          },3000);
+    	        }).catch(function(e) {
+    	          printLog('Error thrown while unsubscribing from push messaging :', e);
+    	          callback("Error in Unregistration")
+    	          var error = "Error thrown while unsubscribing from push messaging :"+e;
+    	          setPushResponse(error,401,"Error");
+    	          callbackM(BMSPushResponse);
+    	        });
+    	      });
+    }
+    
       printLog("Exit - unRegisterDevice");
     };
 
@@ -523,14 +531,7 @@ function BMSPush(){
               "platform": _platform
             };
           }
-          //Safari browser calls register on push ... No need to call it explicitly
-          if(_platform === "WEB_SAFARI") {
-        	  setPushResponse("", 201);
-        	  callbackM(BMSPushResponse);
-          }
-          else {
-        	  callRegister(device,callbackM);
-          }
+          callRegister(device,callbackM);
           
         }else{
           token = subscription;
@@ -562,9 +563,11 @@ function BMSPush(){
 
       function callRegister (device,callbackM){
         if (_isUserIdEnabled){
-          callback(registerDeviceWithUserId(device,callbackM));
+        	//Check if the userId is same for Safari
+            callback(registerDeviceWithUserId(device,callbackM));
         } else{
-          callback(registerDevice(device, callbackM));
+        	//Check if there is no manual unregsiter invoked for Safari
+        	callback(registerDevice(device, callbackM));
         }
       }
       /* Register Device without userId*/
