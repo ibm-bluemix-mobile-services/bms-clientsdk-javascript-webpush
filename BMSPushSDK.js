@@ -14,6 +14,7 @@ limitations under the License.
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
+
 var _appId;
 var _pushClientSecret;
 var _appRegion;
@@ -28,875 +29,909 @@ var reWriteDomain;
 var BMSPushResponse = {};
 var _platform;
 var _websitePushIDSafari;
+var _getMethod;
 
-function BMSPush(){
-  /**
-  * Initialize the BMS Push SDK
-  *
-  * @param appGUID - The push service App Id value
-  * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
-  * @param clientSecret - The push service client secret value.
-  * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
-  */
-  this.initialize = function(params, callback ) {
-    printLog("Enter - initialize");
+function BMSPush() {
+    /**
+     * Initialize the BMS Push SDK
+     *
+     * @param appGUID - The push service App Id value
+     * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
+     * @param clientSecret - The push service client secret value.
+     * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
+     */
+    this.initialize = function(params, callback) {
+        printLog("Enter - initialize");
 
-    _appId = params.appGUID ? params.appGUID : "";
-    _appRegion = params.appRegion ? params.appRegion : "";
-    _pushClientSecret = params.clientSecret ? params.clientSecret : "";
-    _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
-    
-    if (validateInput(_appId) && validateInput(_appRegion)) {
-      setRewriteDomain(_appRegion);
+        _appId = params.appGUID ? params.appGUID : "";
+        _appRegion = params.appRegion ? params.appRegion : "";
+        _pushClientSecret = params.clientSecret ? params.clientSecret : "";
+        _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
 
-      if (validateInput(_pushClientSecret)) {
-        printLog("User has provided a valid client secret");
-      }
-      else {
-        printLog("User has not provided a valid client secret");
-      }
+        if (validateInput(_appId) && validateInput(_appRegion)) {
+            setRewriteDomain(_appRegion);
 
-      if(window.navigator.userAgent.indexOf("Chrome") != -1  && chrome.runtime.getManifest){
-        _isExtension = true;
-      }
+            if (validateInput(_pushClientSecret)) {
+                printLog("User has provided a valid client secret");
+            } else {
+                printLog("User has not provided a valid client secret");
+            }
 
-      if (_isExtension) {
-        chrome.storage.local.get('deviceId', function (result) {
-          _deviceId = result.deviceId;
-          if (_deviceId == "" || _deviceId == null || _deviceId == undefined) {
-            _deviceId = generateUUID();
-          }
-          initializePush(true,callback);
-        });
+            if (getBrowser() === CHROME_EXTENSION) {
+                _isExtension = true;
+            }
 
-      } else{
-        if (!localStorage.getItem("deviceId")) {
-          _deviceId = generateUUID();
-        }else {
-          _deviceId = localStorage.getItem("deviceId");
+            if (_isExtension) {
+                chrome.storage.local.get('deviceId', function(result) {
+                    _deviceId = result.deviceId;
+                    if (_deviceId == "" || _deviceId == null || _deviceId == undefined) {
+                        _deviceId = generateUUID();
+                    }
+                    isPushInitialized = true;
+                    callback(getBMSPushResponse("Successfully initialized Push", 200, ""));
+                });
+                chrome.storage.local.set({
+                    '_push_url': 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId,
+                    '_pushClientSecret': _pushClientSecret
+                });
+
+            } else {
+                if (!localStorage.getItem("deviceId")) {
+                    _deviceId = generateUUID();
+                } else {
+                    _deviceId = localStorage.getItem("deviceId");
+                }
+                checkNotificationSupport().then(() => {
+                    isPushInitialized = true;
+                    callback(getBMSPushResponse("Successfully initialized Push", 200, ""));
+                }).catch(error => {
+                    isPushInitialized = false;
+                    callback(error);
+                });
+            }
+        } else {
+            printLog("Please provide a valid  appGUID or/and appRegion");
+            setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error")
+            callback(PushResponse);
         }
-        checkNotificationSupport(initializePush,callback);
-      }
-    } else {
-      printLog("Please provide a valid  appGUID or/and appRegion");
-      setPushResponse("Please provide a valid  appGUID or/and appRegion",404,"Error")
-      callback (PushResponse);
-    }
-    printLog("Exit - initialize");
-  };
-
-  /**
-  * Registers the device on to the BMSPush Notification Server
-  *
-  */
-  this.register = function (callbackM){
-    _userId = "";
-    registerPush(_userId,callbackM)
-  };
-
-  /**
-  * Registers the device on to the BMSPush Notification Server
-  *
-  * @param userId: the User ID value.
-  */
-  this.registerWithUserId = function (userId, callbackM){
-    registerPush(userId,callbackM)
-  };
-
-  /**
-  * Unregisters the device from the BMSPush Notification Server
-  *
-  */
-  this.unRegisterDevice = function(callbackM){
-    printLog("Enter - unRegisterDevice");
-
-    var userAgentOfBrowser = navigator.userAgent.toLowerCase();
-    printLog("started unregistration for the browser " + userAgentOfBrowser);
-    if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
-    	callback (unRegisterDevice(callbackM));
-    }
-    else {
-    	navigator.serviceWorker.ready.then(function(reg) {
-
-    	      reg.pushManager.getSubscription().then(
-    	        function(subscription) {
-    	          if (!subscription) {
-    	                // We aren’t subscribed to push, so set UI
-    	                // to allow the user to enable push
-    	        		setPushResponse("The device is not enabled for push notifications",0,"Error");
-    	        		callbackM(BMSPushResponse);
-    	        		printLog("Exit - unRegisterDevice");
-    	        		return;
-    	          }
-    	        	
-    	          setTimeout(function() {
-    	            // We have a subcription, so call unsubscribe on it
-    	            subscription.unsubscribe().then(function(successful) {
-    	              printLog('Successfully unRegistered from GCM push notification');
-    	              callback (unRegisterDevice(callbackM));
-    	            }).catch(function(e) {
-    	              // We failed to unsubscribe, this can lead to
-    	              // an unusual state, so may be best to remove
-    	              // the subscription id from your data store and
-    	              // inform the user that you disabled push
-    	              printLog('Unsubscription error: ', e);
-    	              callback("Error in Unregistration")
-    	              setPushResponse("Insufficient Scope. Error in Unregistration",401,"Error");
-    	              callbackM(BMSPushResponse);
-    	            })
-    	          },3000);
-    	        }).catch(function(e) {
-    	          printLog('Error thrown while unsubscribing from push messaging :', e);
-    	          callback("Error in Unregistration")
-    	          var error = "Error thrown while unsubscribing from push messaging :"+e;
-    	          setPushResponse(error,401,"Error");
-    	          callbackM(BMSPushResponse);
-    	        });
-    	      });
-    }
-    
-      printLog("Exit - unRegisterDevice");
+        printLog("Exit - initialize");
     };
 
     /**
-    * Subscribes to a particular backend mobile application Tag(s)
-    *
-    * @param tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
-    */
-    this.subscribe = function(tagArray,callbackM){
-
-      printLog("Enter - Subscribing tags");
-      if(!isPushInitialized) {
-    	  setPushResponse("Initialize before using this function",0,"Not initialized");
-    	  callbackM(BMSPushResponse);
-    	  printLog("Exit - Subscribing tags");
-    	  return;
-      }
-      if (tagArray.length > 0) {
-        callback(subscribeTags(tagArray,callbackM));
-      } else {
-        printLog("Error - Tag array cannot be null. Create tags in your Bluemix App");
-        setPushResponse("Error - Tag array cannot be null. Create tags in your Bluemix App",401,"Error");
-        callbackM(BMSPushResponse);
-      }
-      printLog("Exit - Subscribing tags");
+     * Registers the device on to the BMSPush Notification Server
+     *
+     */
+    this.register = function(callbackM) {
+        _userId = "";
+        registerPush(_userId, callbackM)
     };
 
     /**
-    * Unsubscribes from an backend mobile application Tag(s)
-    *
-    * @param  tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
-    */
-    this.unSubscribe = function(tagArray,callbackM){
-      printLog("Enter - UnSubscribing tags");
-      if(!isPushInitialized) {
-    	  setPushResponse("Initialize before using this function",0,"Not initialized");
-    	  callbackM(BMSPushResponse);
-    	  printLog("Exit - UnSubscribing tags");
-    	  return;
-      }
-      
-      if (tagArray.length > 0) {
-        callback(unSubscribeTags(tagArray,callbackM));
-      } else {
-        printLog("Error - Tag array cannot be null");
-        setPushResponse("Error - Tag array cannot be null",401,"Error");
-        callbackM(BMSPushResponse)
-      }
-      printLog("Exit - UnSubscribing tags");
+     * Registers the device on to the BMSPush Notification Server
+     *
+     * @param userId: the User ID value.
+     */
+    this.registerWithUserId = function(userId, callbackM) {
+        registerPush(userId, callbackM)
     };
 
     /**
-    * Gets the Tags that are subscribed by the device
-    *
-    */
-    this.retrieveSubscriptions = function(callbackM){
-      printLog("Enter - retrieveSubscriptions");
-      callback(retrieveTagsSubscriptions(callbackM));
-      printLog("Exit - retrieveSubscriptions");
+     * Unregisters the device from the BMSPush Notification Server
+     *
+     */
+    this.unRegisterDevice = function(callbackM) {
+        printLog("Enter - unRegisterDevice");
+
+        if (getBrowser() === SAFARI_BROWSER) {
+            callback(unRegisterDevice(callbackM));
+        } else {
+            navigator.serviceWorker.ready.then(function(reg) {
+
+                reg.pushManager.getSubscription().then(
+                    function(subscription) {
+                        if (!subscription) {
+                            // We aren’t subscribed to push, so set UI
+                            // to allow the user to enable push
+                            setPushResponse("The device is not enabled for push notifications", 0, "Error");
+                            callbackM(BMSPushResponse);
+                            printLog("Exit - unRegisterDevice");
+                            return;
+                        }
+
+                        setTimeout(function() {
+                            // We have a subcription, so call unsubscribe on it
+                            subscription.unsubscribe().then(function(successful) {
+                                printLog('Successfully unRegistered from GCM push notification');
+                                callback(unRegisterDevice(callbackM));
+                            }).catch(function(e) {
+                                // We failed to unsubscribe, this can lead to
+                                // an unusual state, so may be best to remove
+                                // the subscription id from your data store and
+                                // inform the user that you disabled push
+                                printLog('Unsubscription error: ', e);
+                                callback("Error in Unregistration")
+                                setPushResponse("Insufficient Scope. Error in Unregistration", 401, "Error");
+                                callbackM(BMSPushResponse);
+                            })
+                        }, 3000);
+                    }).catch(function(e) {
+                    printLog('Error thrown while unsubscribing from push messaging :', e);
+                    callback("Error in Unregistration")
+                    var error = "Error thrown while unsubscribing from push messaging :" + e;
+                    setPushResponse(error, 401, "Error");
+                    callbackM(BMSPushResponse);
+                });
+            });
+        }
+
+        printLog("Exit - unRegisterDevice");
     };
 
     /**
-    * Gets all the available Tags for the backend mobile application
-    *
-    */
-    this.retrieveAvailableTags = function(callbackM){
-      printLog("Enter - retrieveAvailableTags");
-      callback(retrieveTagsAvailable(callbackM));
-      printLog("Exit - retrieveAvailableTags");
+     * Subscribes to a particular backend mobile application Tag(s)
+     *
+     * @param tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
+     */
+    this.subscribe = function(tagArray, callbackM) {
+
+        printLog("Enter - Subscribing tags");
+        if (!isPushInitialized) {
+            setPushResponse("Initialize before using this function", 0, "Not initialized");
+            callbackM(BMSPushResponse);
+            printLog("Exit - Subscribing tags");
+            return;
+        }
+        if (tagArray.length > 0) {
+            callback(subscribeTags(tagArray, callbackM));
+        } else {
+            printLog("Error - Tag array cannot be null. Create tags in your Bluemix App");
+            setPushResponse("Error - Tag array cannot be null. Create tags in your Bluemix App", 401, "Error");
+            callbackM(BMSPushResponse);
+        }
+        printLog("Exit - Subscribing tags");
+    };
+
+    /**
+     * Unsubscribes from an backend mobile application Tag(s)
+     *
+     * @param  tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
+     */
+    this.unSubscribe = function(tagArray, callbackM) {
+        printLog("Enter - UnSubscribing tags");
+        if (!isPushInitialized) {
+            setPushResponse("Initialize before using this function", 0, "Not initialized");
+            callbackM(BMSPushResponse);
+            printLog("Exit - UnSubscribing tags");
+            return;
+        }
+
+        if (tagArray.length > 0) {
+            callback(unSubscribeTags(tagArray, callbackM));
+        } else {
+            printLog("Error - Tag array cannot be null");
+            setPushResponse("Error - Tag array cannot be null", 401, "Error");
+            callbackM(BMSPushResponse)
+        }
+        printLog("Exit - UnSubscribing tags");
+    };
+
+    /**
+     * Gets the Tags that are subscribed by the device
+     *
+     */
+    this.retrieveSubscriptions = function(callbackM) {
+        printLog("Enter - retrieveSubscriptions");
+        callback(retrieveTagsSubscriptions(callbackM));
+        printLog("Exit - retrieveSubscriptions");
+    };
+
+    /**
+     * Gets all the available Tags for the backend mobile application
+     *
+     */
+    this.retrieveAvailableTags = function(callbackM) {
+        printLog("Enter - retrieveAvailableTags");
+        callback(retrieveTagsAvailable(callbackM));
+        printLog("Exit - retrieveAvailableTags");
     };
 
     var setPushResponse = function(response, statusCode, error) {
-      BMSPushResponse.response = response;
-      BMSPushResponse.error = error;
-      BMSPushResponse.statusCode = statusCode;
+        BMSPushResponse.response = response;
+        BMSPushResponse.error = error;
+        BMSPushResponse.statusCode = statusCode;
     }
 
-    this.pushResponse = function(){
-      return BMSPushResponse;
+    this.pushResponse = function() {
+        return BMSPushResponse;
     };
 
     /*
       Enable debug mode to print the logs on the browser console
     */
     this.enableDebug = function() {
-      isDebugEnabled = true;
+        isDebugEnabled = true;
     }
 
     /*
       Disable debug mode
     */
     this.disableDebug = function() {
-      isDebugEnabled = false;
+        isDebugEnabled = false;
     }
 
     /*
       @Deprecated Use enableDebug or disableDebug
     */
     this.isDebugEnable = function(value) {
-      if(typeof(value) === "boolean"){
-        isDebugEnabled = value;
-      }
+        if (typeof(value) === "boolean") {
+            isDebugEnabled = value;
+        }
     };
 
     /*
       Internal functions for the SDK
-    */
+     */
 
-    function registerPush(userId,callbackM) {
-      if (validateInput(userId)) {
-        printLog("set userId registration")
-        _isUserIdEnabled = true;
-        _userId = userId;
-      }
-      if (!_isExtension) {
-        var userAgentOfBrowser = navigator.userAgent.toLowerCase();
-        printLog("started registration for the browser " + userAgentOfBrowser);
-        if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
-        	var resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
-        	if(resultSafariPermission.permission === "default") {
-        		//User never asked before for permission
-        		var base_url = "https://imfpush" + _appRegion +  "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
-        		printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari );
-        		window.safari.pushNotification.requestPermission(base_url,
-        				_websitePushIDSafari,
-        				{"deviceId": localStorage.getItem("deviceId"), "userId": userId },
-        				function(resultRequestPermission){
-        					if(resultRequestPermission.permission === "granted") {
-        						printLog("The user has granted the permission to receive notifications");
-        						registerUsingToken(resultRequestPermission.deviceToken, callbackM);
-        					}
-        				});
-        		
-        	}
-        	else if(resultSafariPermission.permission === "denied") {
-        		// The user denied the notification permission which
-                // means we failed to subscribe and the user will need
-                // to manually change the notification permission to
-                // subscribe to push messages
-                printLog('Permission for Notifications was denied');
-                setPushResponse("The user denied permission for Safari Push Notifications.",401,"Error");
-                callback("Error in registration");
-                callbackM(BMSPushResponse);
-        	}
-        	else {
-        		//Already granted the permission
-        		registerUsingToken(resultSafariPermission.deviceToken, callbackM);
-        	}
+    const CHROME_EXTENSION = 'ChromeExtension';
+    const SAFARI_BROWSER = 'Safari';
+    const FIREFOX_BROWSER = 'Firefox';
+    const CHROME_BROWSER = 'Chrome';
+    const SERVICE_WORKER = 'BMSPushServiceWorker.js';
+
+    function getBrowser() {
+        if (window.navigator.userAgent.indexOf("Chrome") != -1 && chrome.runtime.getManifest) {
+            return CHROME_EXTENSION;
         }
-        else {
-        	navigator.serviceWorker.ready.then(function(reg) {
-                reg.pushManager.getSubscription().then(
-                  function(subscription) {
-                    if (subscription) {
-                      registerUsingToken(subscription,callbackM);
-                    } else {
-                      reg.pushManager.subscribe({
-                        userVisibleOnly: true
-                      }).then(function(subscription) {
-                        registerUsingToken(subscription,callbackM);
-                      }).catch(function(error) {
-                        if (Notification.permission === 'denied') {
-                          // The user denied the notification permission which
-                          // means we failed to subscribe and the user will need
-                          // to manually change the notification permission to
-                          // subscribe to push messages
-                          printLog('Permission for Notifications was denied');
-                          setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
-                        } else {
-                          // A problem occurred with the subscription, this can
-                          // often be down to an issue or lack of the gcm_sender_id
-                          // and / or gcm_user_visible_only
-                          printLog('Unable to subscribe to push.', error);
-                          setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
-                        }
-                        callback("Error in registration")
-                        callbackM(BMSPushResponse)
-                      });
-                    }
-                  }).catch(function(e) {
-                    printLog('Error thrown while subscribing from ' +
-                    'push messaging.', e);
-                    setPushResponse(e,401,"Error");
-                    callbackM(BMSPushResponse)
-                  });
-                });
+        let userAgentOfBrowser = navigator.userAgent.toLowerCase();
+        if ((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
+            return SAFARI_BROWSER;
+        } else if (userAgentOfBrowser.indexOf("firefox") != -1) {
+            return FIREFOX_BROWSER;
+        } else {
+            return CHROME_BROWSER;
         }
-        		
-        
-      }else{
-          get("/settings/chromeAppExtConfPublic",function ( res ) {
-            printLog('previous Device Registration Result :', res);
-            var status = res.status ;
-            if (status == 200){
-              var json = JSON.parse(res.response);
-              _gcmSenderId = json.senderId
-              var senderIds = [_gcmSenderId];
-              chrome.gcm.register(senderIds, function(registrationId){
-                if (chrome.runtime.lastError) {
-                  setPushResponse(chrome.runtime.lastError,401,"Error");
-                  callbackM(MFPPushResponse)
-                  return;
+    }
+
+    function registerPush(userId, callbackM) {
+        if (validateInput(userId)) {
+            printLog("userId based registration with userId " + userId);
+            _isUserIdEnabled = true;
+            _userId = userId;
+        }
+        if (!_isExtension) {
+
+            if (getBrowser() === SAFARI_BROWSER) {
+                let resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
+                if (resultSafariPermission.permission === "default") {
+                    //User never asked before for permission
+                    let base_url = "https://imfpush" + _appRegion + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+                    printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari);
+                    window.safari.pushNotification.requestPermission(base_url,
+                        _websitePushIDSafari, {
+                            "deviceId": localStorage.getItem("deviceId"),
+                            "userId": userId
+                        },
+                        function(resultRequestPermission) {
+                            if (resultRequestPermission.permission === "granted") {
+                                printLog("The user has granted the permission to receive notifications");
+                                registerUsingToken(resultRequestPermission.deviceToken, callbackM);
+                            }
+                        });
+
+                } else if (resultSafariPermission.permission === "denied") {
+                    // The user denied the notification permission which
+                    // means we failed to subscribe and the user will need
+                    // to manually change the notification permission to
+                    // subscribe to push messages
+                    printLog('Permission for Notifications was denied');
+                    setPushResponse("The user denied permission for Safari Push Notifications.", 401, "Error");
+                    callback("Error in registration");
+                    callbackM(BMSPushResponse);
+                } else {
+                    //Already granted the permission
+                    registerUsingToken(resultSafariPermission.deviceToken, callbackM);
                 }
-                registerUsingToken(registrationId,callbackM);
-                printLog("The response is : ",registrationId);
-              });
-            } else{
-              printLog("The response is ,",res);
-              setPushResponse(res.responseText,status,"Error while retrieving the Chrome App/Ext configuration");
-              callbackM(BMSPushResponse)
+            } else {
+                navigator.serviceWorker.ready.then(function(reg) {
+                    reg.pushManager.getSubscription().then(
+                        function(subscription) {
+                            if (subscription) {
+                                registerUsingToken(subscription, callbackM);
+                            } else {
+                                reg.pushManager.subscribe({
+                                    userVisibleOnly: true
+                                }).then(function(subscription) {
+                                    registerUsingToken(subscription, callbackM);
+                                }).catch(function(error) {
+                                    if (Notification.permission === 'denied') {
+                                        // The user denied the notification permission which
+                                        // means we failed to subscribe and the user will need
+                                        // to manually change the notification permission to
+                                        // subscribe to push messages
+                                        printLog('Permission for Notifications was denied');
+                                        setPushResponse("Notifications aren\'t supported on service workers.", 401, "Error");
+                                    } else {
+                                        // A problem occurred with the subscription, this can
+                                        // often be down to an issue or lack of the gcm_sender_id
+                                        // and / or gcm_user_visible_only
+                                        printLog('Unable to subscribe to push.', error);
+                                        setPushResponse("Notifications aren\'t supported on service workers.", 401, "Error");
+                                    }
+                                    callback("Error in registration")
+                                    callbackM(BMSPushResponse)
+                                });
+                            }
+                        }).catch(function(e) {
+                        printLog('Error thrown while subscribing from ' +
+                            'push messaging.', e);
+                        setPushResponse(e, 401, "Error");
+                        callbackM(BMSPushResponse)
+                    });
+                });
             }
-          },null);
-        }
-      }
 
-      function update () {
+
+        } else {
+            get("/settings/chromeAppExtConfPublic", function(res) {
+                printLog('previous Device Registration Result :', res);
+                var status = res.status;
+                if (status == 200) {
+                    var json = JSON.parse(res.response);
+                    _gcmSenderId = json.senderId
+                    var senderIds = [_gcmSenderId];
+                    chrome.gcm.register(senderIds, function(registrationId) {
+                        if (chrome.runtime.lastError) {
+                            setPushResponse(chrome.runtime.lastError, 401, "Error");
+                            callbackM(MFPPushResponse)
+                            return;
+                        }
+                        registerUsingToken(registrationId, callbackM);
+                        printLog("The response is : ", registrationId);
+                    });
+                } else {
+                    printLog("The response is ,", res);
+                    setPushResponse(res.responseText, status, "Error while retrieving the Chrome App/Ext configuration");
+                    callbackM(BMSPushResponse)
+                }
+            }, null);
+        }
+    }
+
+    function update() {
 
         function callback(response) {
-          printLog("updation is done :", response);
+            printLog("updation is done :", response);
         }
         registerPush(_userId, callback);
-      }
+    }
 
-      function initializePush(value, callbackM) {
+    function getBMSPushResponse(response, statusCode, error) {
+        return {
+            'response': response,
+            'error': error,
+            'statusCode': statusCode
+        };
+    }
+
+    function initializePush(value, callbackM) {
         if (value === true) {
-          setPushResponse("Successfully initialized Push",200, "");
-          printLog("Successfully Initialized");
-          isPushInitialized = true;
-          callbackM(BMSPushResponse)
+            setPushResponse("Successfully initialized Push", 200, "");
+            printLog("Successfully Initialized");
+            isPushInitialized = true;
+            callbackM(BMSPushResponse)
         } else {
-          printLog("Error in Initializing push");
-          setPushResponse("Error in Initializing push",0, "Error");
-          isPushInitialized = false;
-          callbackM(BMSPushResponse)
+            printLog("Error in Initializing push");
+            isPushInitialized = false;
+            callbackM(BMSPushResponse)
         }
-      }
+    }
 
-      function sendMessage(message) {
+    function sendMessage(message) {
         return new Promise(function(resolve, reject) {
-          var messageChannel = new MessageChannel();
-          messageChannel.port1.onmessage = function(event) {
-            if (event.data.error) {
-              reject(event.data.error);
-            } else {
-              resolve(event.data);
-              update();
-            }
-          };
-          navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
+            var messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = function(event) {
+                if (event.data.error) {
+                    reject(event.data.error);
+                } else {
+                    resolve(event.data);
+                    
+                }
+            };
+            navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
         });
-      }
+    }
 
-      function checkNotificationSupport(initializePushM,callbackM) {
-        printLog("Started checking the notification compatibility");
-        var userAgentOfBrowser = navigator.userAgent.toLowerCase();
-        if ('serviceWorker' in navigator) {
-          if(userAgentOfBrowser.indexOf("firefox") != -1 )
-          {
-            sendMessage("Set Update Port")
-          }
-          navigator.serviceWorker.register('BMSPushServiceWorker.js').then(function(reg) {
-            if(reg.installing) {
-              printLog('Service worker installing');
-            } else if(reg.waiting) {
-              printLog('Service worker installed');
-            } else if(reg.active) {
-              printLog('Service worker active');
-            }
-            if (!(reg.showNotification)) {
-              printLog('Notifications aren\'t supported on service workers.');
-              callback("Error in initialize. Notifications aren\'t supported on service workers.")
-              setPushResponse("Notifications aren\'t supported on service workers.",401,"Error");
-              initializePushM(false,callbackM);
+    function checkNotificationSupport() {
+        return new Promise((resolve, reject) => {
+            printLog("Started checking the notification compatibility");
+            if (navigator.serviceWorker &&
+                window.location.protocol === 'https:') { //Only HTTPS is supported
+            	navigator.serviceWorker.addEventListener('message', function(event){
+                    console.log("Client 1 Received Message: " + event.data);
+                    //event.ports[0].postMessage("Client 1 Says 'Hello back!'");
+                    let eventData = event.data;
+                    printLog("The response from the service worker is " + eventData);
+          		  let command = eventData.substr(0, eventData.indexOf(':'));
+          		  let msg = eventData.substr(eventData.indexOf(':') + 1);
+          		  let statusStr = '';
+          		  let nid = '';
+          		  if(command === 'msgEventOpen' ) {
+          			  statusStr = 'OPEN';
+          			  let jsonPayload =JSON.parse(msg);
+          			  nid = jsonPayload.nid;
+          		  }
+          		  else if(command === 'msgEventSeen') {
+          			  statusStr = 'SEEN';
+          			  let jsonMsg = JSON.parse(msg);
+        			  let strPayload = jsonMsg.payload;
+        			  let jsonPayload = JSON.parse(jsonMsg.payload);
+        			  nid = jsonPayload.nid;
+          		  }
+          		  
+          		  if(command === 'msgEventOpen' || command === 'msgEventSeen') {
+          			  let statusObj = {'deviceId': _deviceId, 'status': statusStr};
+          			  printLog("status str " + JSON.stringify(statusObj));
+          			  printLog("The nid of the message is " + nid);
+          			  put('/messages/' + nid, function(res) {
+          	                if (res.status == 200 || res.status == 201) {
+          	                    printLog('message status is reported');
+          	                } else {
+          	                	printLog('failure reporting message' + res.responseText);
+          	                }
+          	              //sendMessage({command:'Set Update Port'});
+          	            },statusObj, null);
+          		  }
+          		  else {
+          			  printLog('Update called');
+          			  update();
+          		  }
+                    //update();
+                });
+                navigator.serviceWorker.register(SERVICE_WORKER).then(function(reg) {
+                	
+                	
+                	
+                	//sendMessage({command:'Set Update Port'});
+                    if (reg.installing) {
+                        printLog('Service worker installing');
+                    } else if (reg.waiting) {
+                        printLog('Service worker installed');
+                    } else if (reg.active) {
+                        printLog('Service worker active');
+                    }
+                    if (!(reg.showNotification)) {
+                        printLog('Notifications aren\'t supported on service workers.');
+                        reject(getBMSPushResponse("Notifications aren\'t supported on service workers.", 401, "Error"));
+                    }
+
+                    // Check the current Notification permission.
+                    // If its denied, it's a permanent block until the
+                    // user changes the permission
+                    if (Notification.permission === 'denied') {
+                        printLog('The user has blocked notifications.');
+                        reject(getBMSPushResponse("The user has blocked notifications", 401, "Error"));
+                    }
+
+                    // Check if push messaging is supported
+                    if (!('PushManager' in window)) {
+                        printLog('Push messaging isn\'t supported.');
+                        reject(getBMSPushResponse("Push messaging isn\'t supported.", 401, "Error"));
+                    }
+                    resolve();
+                });
+            } else if (getBrowser() === SAFARI_BROWSER) {
+                //Service workers are not supported by Safari
+                //TODO: Check for safari version
+                resolve();
+            } else {
+                printLog('Service workers aren\'t supported in this browser.');
+                reject(getBMSPushResponse("Service workers aren\'t supported in this browser.", 401, "Error"));
             }
 
-            // Check the current Notification permission.
-            // If its denied, it's a permanent block until the
-            // user changes the permission
-            if (Notification.permission === 'denied') {
-              printLog('The user has blocked notifications.');
-              //return false;
-              callback("Error in initialize. The user has blocked notifications.")
-              setPushResponse("The user has blocked notifications",401,"Error");
-              initializePushM(false,callbackM);
-            }
+        });
+    }
 
-            // Check if push messaging is supported
-            if (!('PushManager' in window)) {
-              printLog('Push messaging isn\'t supported.');
-              callback("Error in registration. Push messaging isn\'t supported.")
-              setPushResponse("Push messaging isn\'t supported.",401,"Error")
-              initializePushMcallback(false,callbackM);
-            }
-            initializePushM(true,callbackM);
-          })
-        }
-        else if(userAgentOfBrowser.indexOf('safari') != -1) {
-        	//Service workers are not supported by Safari
-        	//TODO: Check for safari version
-        	initializePushM(true,callbackM);
-        }
-        else {
-          printLog('Service workers aren\'t supported in this browser.');
-          callback("Service workers aren\'t supported in this browser.")
-          setPushResponse("Service workers aren\'t supported in this browser.",401,"Error")
-          initializePushM(false,callbackM);
-        }
-      }
-
-      function callback (response){
+    function callback(response) {
         printLog("Response from Bluemix Push Notification Service");
         printLog(response);
-      }
+    }
 
-      /*Get subscription details*/
+    /*Get subscription details*/
 
-      function registerUsingToken(subscription, callbackM) {
+    function registerUsingToken(subscription, callbackM) {
 
+        //    	  Promise.all([localStorage.getItem("deviceId"), getTokenFromSubscription(subscription), getPlatformFromBrowser()]).
+        //    	  	then(([deviceId, token, platform]) => {});
         // Update status to subscribe current user on server, and to let
         // other users know this user has subscribed
         printLog('Subscription data is : ', JSON.stringify(subscription));
         printLog('endpoint:', subscription.endpoint);
-        var subscriptionStr = JSON.stringify(subscription).replace(/"/g,"\\\"");
+        var subscriptionStr = JSON.stringify(subscription).replace(/"/g, "\\\"");
         printLog('subscription as string: ', subscriptionStr);
 
         _platform = "";
         var token;
         if (!_isExtension) {
-          _deviceId = localStorage.getItem("deviceId");
-          localStorage.setItem("token",subscription);
+            _deviceId = localStorage.getItem("deviceId");
+            localStorage.setItem("token", subscription);
 
-          var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
-          var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
-          var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
-          var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
+            var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+            var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+            var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+            var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-          
-          var userAgentOfBrowser = navigator.userAgent.toLowerCase();
-          if((userAgentOfBrowser.indexOf('safari') >= 0) && (userAgentOfBrowser.indexOf('chrome') == -1)) {
-        	  _platform = "WEB_SAFARI";
-        	  token = subscription; // This is a string value;
-        	  
-        	  printLog('The device token from safari is ' + token);
-          }
-          else {
-        	  var tokenValue = {
-        	            "endpoint": subscription.endpoint,
-        	            "userPublicKey": key,
-        	            "userAuth": authSecret,
-        	          };
-        	  token = JSON.stringify(tokenValue);
-          }
-          
-          if(userAgentOfBrowser.indexOf("firefox") != -1 ){
+            if (getBrowser() === SAFARI_BROWSER) {
+                _platform = "WEB_SAFARI";
+                token = subscription; // This is a string value;
 
-            _platform = "WEB_FIREFOX";
-
-          } else if(userAgentOfBrowser.indexOf("chrome") != -1 ){
-
-            _platform = "WEB_CHROME";
-          }
-          var device = {}
-          if (_isUserIdEnabled == true){
-            device = {
-              "deviceId": _deviceId,
-              "token": token,
-              "platform": _platform,
-              "userId":_userId
-            };
-          } else{
-            device = {
-              "deviceId": _deviceId,
-              "token": token,
-              "platform": _platform
-            };
-          }
-          callRegister(device,callbackM);
-          
-        }else{
-          token = subscription;
-          _platform = "APPEXT_CHROME"
-          var device = {};
-          chrome.storage.local.get('deviceId', function (result) {
-            _deviceId = result.deviceId;
-
-            if (_isUserIdEnabled == true){
-              device = {
-                "deviceId": _deviceId,
-                "token": token,
-                "platform": _platform,
-                "userId":_userId
-              };
-            } else{
-              device = {
-                "deviceId": _deviceId,
-                "token": token,
-                "platform": _platform
-              };
+                printLog('The device token from safari is ' + token);
+            } else {
+                var tokenValue = {
+                    "endpoint": subscription.endpoint,
+                    "userPublicKey": key,
+                    "userAuth": authSecret,
+                };
+                token = JSON.stringify(tokenValue);
             }
-            callRegister(device,callbackM);
-          });
-          chrome.storage.local.set({'token':subscription})
-          BMSPushBackground.init();
-        }
-      }
 
-      function callRegister (device,callbackM){
-        if (_isUserIdEnabled){
-        	//Check if the userId is same for Safari
-            callback(registerDeviceWithUserId(device,callbackM));
-        } else{
-        	//Check if there is no manual unregsiter invoked for Safari
-        	callback(registerDevice(device, callbackM));
-        }
-      }
-      /* Register Device without userId*/
-      function registerDevice(device,callbackM) {
+            if (getBrowser() === FIREFOX_BROWSER) {
 
-        printLog("Got device details without userid:", device);
-        printLog("Checking the previous registration :", device);
-        var devId = device.deviceId;
-        get("/devices/"+devId,function ( res ) {
+                _platform = "WEB_FIREFOX";
 
-          printLog('previous Device Registration Result :', res);
-          var status = res.status ;
-          if(status == 404){
-            printLog('Starting New Device Registration  without userid:');
-            post("/devices", function ( res ) {
-              status = res.status ;
-              printLog('New Device Registration without userid: Result :', res);
-              if (status == 201) {
-                printLog("Successfully registered device");
-                printLog("The response is ,",res);
-                setPushResponse(res,201,"");
-                callbackM(BMSPushResponse)
-              } else{
-                printLog("Error in registering device");
-                printLog("The response is ,",res);
-                setPushResponse(res,status,"Error in registering device");
-                callbackM(BMSPushResponse)
-              }
-              return res;
-            },device,null);
-          }else if ((status == 406) || (status == 500)) {
-            printLog("Error while verifying previuos device registration without userid:");
-            printLog("The response is ,",res);
-            setPushResponse(res,status,"Error while verifying previuos device registration");
-            callbackM(BMSPushResponse)
-            return res;
-          } else  {
+            } else if (getBrowser() === CHROME_BROWSER) {
 
-            var resp = JSON.parse(res.responseText);
-            var rToken = resp.token;
-            var rDevId = resp.deviceId;
-            if ( !(rToken === device.token) ||  !(rDevId === device.deviceId)){
-              put("/devices/"+devId, function ( res ) {
+                _platform = "WEB_CHROME";
+            }
+            var device = {}
+            if (_isUserIdEnabled == true) {
+                registerDeviceWithUserId({
+                    "deviceId": _deviceId,
+                    "token": token,
+                    "platform": _platform,
+                    "userId": _userId
+                }, callbackM);
+            } else {
+                registerDevice({
+                    "deviceId": _deviceId,
+                    "token": token,
+                    "platform": _platform
+                }, callbackM);
+            }
 
-                var status = res.status;
-                if (status == 201) {
-                  printLog("Successfully registered device without userid:");
-                  printLog("The response is ,",res);
-                  setPushResponse(res,201,"");
-                  callbackM(BMSPushResponse)
-                } else{
-                  printLog("Error in registering device without userid:");
-                  printLog("The response is ,",res);
-                  setPushResponse(res,status,"Error in registering device");
-                  callbackM(BMSPushResponse)
+        } else {
+            token = subscription;
+            _platform = "APPEXT_CHROME"
+
+            chrome.storage.local.get('deviceId', function(result) {
+                _deviceId = result.deviceId;
+
+                if (_isUserIdEnabled == true) {
+                    registerDeviceWithUserId({
+                        "deviceId": _deviceId,
+                        "token": token,
+                        "platform": _platform,
+                        "userId": _userId
+                    }, callbackM);
+                } else {
+                    registerDevice({
+                        "deviceId": _deviceId,
+                        "token": token,
+                        "platform": _platform
+                    }, callbackM);
                 }
-                return res;
-              },device,null);
-            } else{
-              printLog("Device is already registered and device registration parameters not changed. without userid:");
-              setPushResponse(res,201,"");
-              callbackM(BMSPushResponse)
-              return res;
+            });
+            chrome.storage.local.set({
+                'token': subscription
+            })
+            BMSPushBackground.init();
+        }
+    }
+
+    
+    function getDevice(deviceId) {
+        printLog('deviceId Device Registration Result :' + deviceId);
+        return new Promise(function(resolve, reject) {
+            get("/devices/" + deviceId, function(res) {
+                printLog('previous Device Registration Result :', res);
+                if (res.status == 200) {
+                    resolve(JSON.parse(res.responseText));
+                } else {
+                    reject(res);
+                }
+            });
+
+        });
+    }
+
+    function updateDevice(device, put) {
+        return new Promise((resolve, reject) => {
+            put("/devices/" + device.deviceId, function(res) {
+                if (res.status == 200 || res.status == 201) {
+                    resolve(JSON.parse(res.responseText));
+                } else {
+                    reject(res);
+                }
+            }, device);
+        });
+    }
+
+    function registerNewDevice(device, post) {
+        return new Promise((resolve, reject) => {
+            post("/devices", function(res) {
+                if (res.status == 201) {
+                    resolve(JSON.parse(res.responseText));
+                } else {
+                    reject(res);
+                }
+            }, device);
+        });
+    }
+
+
+
+
+    /* Register Device without userId*/
+    function registerDevice(device, callbackM) {
+
+        printLog("registerDevice: Checking the previous registration for the device :", device);
+        getDevice(device.deviceId, get).then(existingDevice => {
+            if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId) {
+                updateDevice(device, put).then((updatedDevice) => {
+                    printLog("Successfully updated device without userid");
+                    callbackM(getBMSPushResponse(updatedDevice, 200, ""));
+                }).catch((res) => {
+                    printLog("Error in udpating device without userid and the response is " + res);
+                    callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                });
+            } else {
+                printLog("Device is already registered and device registration parameters not changed. without userid:");
+                callbackM(getBMSPushResponse(JSON.stringify(existingDevice), 201, ""));
             }
-          }
-        }, device,null);
-      }
+        }, errorObj => {
+            if (errorObj.status == 404) {
+                printLog('Starting New Device Registration  without userid:');
+                registerNewDevice(device, post).then((updatedDevice) => {
+                    printLog("Successfully registered device without userid");
+                    callbackM(getBMSPushResponse(updatedDevice, 201, ""));
+                }).catch((res) => {
+                    printLog("Error in registering device without userid and the response is " + res);
+                    callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                });
+            } else if ((errorObj.status == 406) || (errorObj.status == 500)) {
+                printLog("Error while verifying previuos device registration without userid and the response is ,", errorObj);
+                callbackM(getBMSPushResponse(errorObj, status, "Error while verifying previuos device registration"));
+            }
+        });
+    }
 
-      /* Register Device with userId*/
+    /* Register Device with userId*/
 
-      function registerDeviceWithUserId(device,callbackM) {
+    function registerDeviceWithUserId(device, callbackM) {
 
-        printLog("Got device details with userid:", device);
-        printLog("Checking the previous registration :", device);
-        var devId = device.deviceId;
+        printLog("registerDeviceWithUserId: Checking the previous registration :", device);
         _userId = device.userId;
         if (validateInput(_pushClientSecret) && validateInput(_userId)) {
-          get("/devices/"+devId,function ( res ) {
-            printLog('previous Device Registration Result :', res);
-            var status = res.status ;
-            if(status == 0) {
-            	//CORS issue
-            	setPushResponse("",status,"Error in registering device");
-                callbackM(BMSPushResponse);
-                return res;
-            }
-            else if(status == 404){
-              printLog('Starting New Device Registration ');
-              post("/devices", function ( res ) {
-
-                status = res.status ;
-
-                printLog('New Device Registration Result :', res);
-                if (status == 201) {
-                  printLog("Successfully registered device");
-                  printLog("The response is ,",res);
-                  setPushResponse(res.responseText,201,"");
-                  callbackM(BMSPushResponse)
-                } else{
-                  printLog("Erron in registering device");
-                  printLog("The response is ,",res);
-                  setPushResponse(res.responseText,status,"Error in registering device");
-                  callbackM(BMSPushResponse)
+            getDevice(device.deviceId, get).then(existingDevice => {
+                if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId || existingDevice.userId != device.userId) {
+                    updateDevice(device, put).then((updatedDevice) => {
+                        printLog("Successfully updated device without userid");
+                        callbackM(getBMSPushResponse(updatedDevice, 200, ""));
+                    }).catch((res) => {
+                        printLog("Error in udpating device without userid and the response is " + res);
+                        callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                    });
+                } else {
+                    printLog("Device is already registered and device registration parameters not changed. without userid:");
+                    callbackM(getBMSPushResponse(JSON.stringify(existingDevice), 201, ""));
                 }
-                return res;
-              },device,null);
-            }else if ((status == 406) || (status == 500)) {
-              printLog("The response is ,",res);
-              setPushResponse(res.responseText,status,"Error while verifying previuos device registration");
-              callbackM(BMSPushResponse)
-              return res;
-            } else  {
-
-              var resp = JSON.parse(res.responseText);
-              var rToken = resp.token;
-              var rDevId = resp.deviceId;
-              var userId = resp.userId;
-              if ( !(rToken === device.token) ||  !(rDevId === device.deviceId) || !(userId == _userId)){
-                put("/devices/"+devId, function ( res ) {
-                  var status = res.status;
-                  if (status == 201) {
-                    printLog("The response is ,",res);
-                    setPushResponse(res.responseText,201,"");
-                    callbackM(BMSPushResponse)
-                  } else{
-                    printLog("The response is ,",res);
-                    setPushResponse(res.responseText,status,"Error in registering device");
-                    callbackM(BMSPushResponse)
-                  }
-                  return res;
-                },device,null);
-              } else{
-                printLog("Device is already registered and device registration parameters not changed.");
-                setPushResponse(res.responseText,201,"");
-                callbackM(BMSPushResponse)
-                return res;
-              }
-            }
-          }, device,null);
+            }, errorObj => {
+                if (errorObj.status == 404) {
+                    printLog('Starting New Device Registration  without userid:');
+                    registerNewDevice(device, post).then((updatedDevice) => {
+                        printLog("Successfully registered device without userid");
+                        callbackM(getBMSPushResponse(updatedDevice, 201, ""));
+                    }).catch((res) => {
+                        printLog("Error in registering device without userid and the response is " + res);
+                        callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                    });
+                } else if ((errorObj.status == 406) || (errorObj.status == 500)) {
+                    printLog("Error while verifying previuos device registration without userid and the response is ,", errorObj);
+                    callbackM(getBMSPushResponse(errorObj, status, "Error while verifying previuos device registration"));
+                }
+            });
         } else {
-          printLog("Please provide valid userId and clientSecret.")
-          setPushResponse("Please provide valid userId and clientSecret.",401,"Error")
-          callbackM(BMSPushResponse)
+            printLog("Please provide valid userId and clientSecret.");
+            callbackM(getBMSPushResponse("Please provide valid userId and clientSecret.", 401, "Error"));
         }
-      }
+    }
 
-      function unRegisterDevice (callbackM){
+    function unRegisterDevice(callbackM) {
         printLog("Entering the unregister device");
         var devId = localStorage.getItem("deviceId");
-        deletes("/devices/"+devId, function ( response ) {
+        deletes("/devices/" + devId, function(response) {
 
-          var status = response.status;
-          if (status == 204) {
-            printLog("Successfully unregistered the device");
-            setPushResponse(response.responseText,204,"");
-            localStorage.setItem("deviceId","");
-            callbackM(BMSPushResponse)
-            return response;
-          } else{
-            printLog("Error in  unregistering the device");
-            setPushResponse(response.responseText,status,"Error")
-            callbackM(BMSPushResponse)
-            return response;
-          }
-        },null);
-      }
+            var status = response.status;
+            if (status == 204) {
+                printLog("Successfully unregistered the device");
+                setPushResponse(response.responseText, 204, "");
+                localStorage.setItem("deviceId", "");
+                callbackM(BMSPushResponse)
+                return response;
+            } else {
+                printLog("Error in  unregistering the device");
+                setPushResponse(response.responseText, status, "Error")
+                callbackM(BMSPushResponse)
+                return response;
+            }
+        }, null);
+    }
 
-      function subscribeTags(tagArray,callbackM) {
+    function subscribeTags(tagArray, callbackM) {
         printLog("Entering the subscribe tags");
         var devId = localStorage.getItem("deviceId");
         var tags = {
-          "deviceId": devId,
-          "tagNames": tagArray
+            "deviceId": devId,
+            "tagNames": tagArray
         };
-        post("/subscriptions", function ( res ) {
-          var status = res.status ;
-          printLog('Tag Subscription Result :', res);
-          if (status >= 200 && status <= 300)  {
-            printLog("Successfully subscribed to tags -");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"");
-            callbackM(BMSPushResponse)
-          } else{
-            printLog("Error while subscribing to tags :");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"Error while subscribing to tags :");
-            callbackM(BMSPushResponse)
-          }
-          return res;
-        },tags,null);
-      }
+        post("/subscriptions", function(res) {
+            var status = res.status;
+            printLog('Tag Subscription Result :', res);
+            if (status >= 200 && status <= 300) {
+                printLog("Successfully subscribed to tags -");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "");
+                callbackM(BMSPushResponse)
+            } else {
+                printLog("Error while subscribing to tags :");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "Error while subscribing to tags :");
+                callbackM(BMSPushResponse)
+            }
+            return res;
+        }, tags, null);
+    }
 
-      function unSubscribeTags(tagArray,callbackM) {
+    function unSubscribeTags(tagArray, callbackM) {
         printLog("Entering the Un-subscribe tags");
         var devId = localStorage.getItem("deviceId");
         var tags = {
-          "deviceId": devId,
-          "tagNames": tagArray
+            "deviceId": devId,
+            "tagNames": tagArray
         };
-        post("/subscriptions?action=delete", function ( res ) {
-          var status = res.status ;
-          printLog('Tag un-subscription Result :', res);
-          if (status >= 200 && status <= 300)  {
-            printLog("Successfully Un-subscribed to tags -");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"");
-            callbackM(BMSPushResponse)
-          } else{
-            printLog("Error while Un-subscribing to tags :");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"Error while Un-subscribing to tags :");
-            callbackM(BMSPushResponse)
-          }
-          return res;
-        },tags,null);
-      }
+        post("/subscriptions?action=delete", function(res) {
+            var status = res.status;
+            printLog('Tag un-subscription Result :', res);
+            if (status >= 200 && status <= 300) {
+                printLog("Successfully Un-subscribed to tags -");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "");
+                callbackM(BMSPushResponse)
+            } else {
+                printLog("Error while Un-subscribing to tags :");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "Error while Un-subscribing to tags :");
+                callbackM(BMSPushResponse)
+            }
+            return res;
+        }, tags, null);
+    }
 
-      function retrieveTagsSubscriptions(callbackM) {
+    function retrieveTagsSubscriptions(callbackM) {
         printLog("Entering the Retrieve subscriptions of tags");
         var devId = localStorage.getItem("deviceId");
 
-        get("/subscriptions?deviceId="+devId,function ( res ) {
-          var status = res.status ;
-          printLog('Retrieve subscription Result :', res);
-          if (status >= 200 && status <= 300)  {
-            printLog("Successfully retrieved subscribed tags");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"");
-            callbackM(BMSPushResponse)
-          } else{
-            printLog("Error while retrieve subscribed tags :");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"Error while retrieve subscribed tags :");
-            callbackM(BMSPushResponse)
-          }
-          return res;
-        },null);
-      }
+        get("/subscriptions?deviceId=" + devId, function(res) {
+            var status = res.status;
+            printLog('Retrieve subscription Result :', res);
+            if (status >= 200 && status <= 300) {
+                printLog("Successfully retrieved subscribed tags");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "");
+                callbackM(BMSPushResponse)
+            } else {
+                printLog("Error while retrieve subscribed tags :");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "Error while retrieve subscribed tags :");
+                callbackM(BMSPushResponse)
+            }
+            return res;
+        }, null);
+    }
 
-      function retrieveTagsAvailable(callbackM) {
+    function retrieveTagsAvailable(callbackM) {
         printLog("Entering the Retrieve available tags");
         printLog("Entering the Retrieve subscriptions of tags");
-        get("/tags",function ( res ) {
-          var status = res.status ;
-          printLog('Retrieve available tags Result :', res);
-          if (status >= 200 && status <= 300)  {
-            printLog("Successfully retrieved available tags");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"");
-            callbackM(BMSPushResponse)
-          } else{
-            printLog("Error while retrieve available tags :");
-            printLog("The response is ,",res);
-            setPushResponse(res.responseText,status,"Error while retrieve available tags :");
-            callbackM(BMSPushResponse)
-          }
-          return res;
-        },null);
-      }
+        get("/tags", function(res) {
+            var status = res.status;
+            printLog('Retrieve available tags Result :', res);
+            if (status >= 200 && status <= 300) {
+                printLog("Successfully retrieved available tags");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "");
+                callbackM(BMSPushResponse)
+            } else {
+                printLog("Error while retrieve available tags :");
+                printLog("The response is ,", res);
+                setPushResponse(res.responseText, status, "Error while retrieve available tags :");
+                callbackM(BMSPushResponse)
+            }
+            return res;
+        }, null);
+    }
 
-      /*
-      API calls start here
-      */
-      function get (action, callback, data, headers) {
+
+    /*
+    API calls start here
+    */
+    function get(action, callback, data, headers) {
+    	printLog("Get call");
         return callPushRest('GET', callback, action, data, headers);
-      }
+    }
 
-      function post (action, callback, data, headers) {
+    function post(action, callback, data, headers) {
         return callPushRest('POST', callback, action, data, headers);
-      }
+    }
 
-      function put (action, callback, data, headers) {
+    function put(action, callback, data, headers) {
         return callPushRest('PUT', callback, action, data, headers);
-      }
+    }
 
-      function deletes (action,callback, data, headers) {
+    function deletes(action, callback, data, headers) {
         return callPushRest('DELETE', callback, action, data, headers);
-      }
+    }
 
 
-      function callPushRest(method, callback, action, data, headers)
-      {
+    function callPushRest(method, callback, action, data, headers) {
+    	printLog("callPushRest");
         var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
-          if (xmlHttp.readyState == 4 ) {
-        	  callback(xmlHttp);
-          }
+            if (xmlHttp.readyState == 4) {
+                callback(xmlHttp);
+            }
         }
         xmlHttp.open(method, url + action, true); // true for asynchronous
         xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
         if (validateInput(_pushClientSecret)) {
-          xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
+            xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
         }
         xmlHttp.send(JSON.stringify(data));
-      }
+    }
 
-      function setRewriteDomain(appReg) {
+    function setRewriteDomain(appReg) {
         var a = appReg.split(".");
-        if(appReg.includes("stage1-dev")){
-          _appRegion = ".stage1-dev."+a[2]+".bluemix.net"
+        if (appReg.includes("stage1-dev")) {
+            _appRegion = ".stage1-dev." + a[2] + ".bluemix.net"
         } else if (appReg.includes("stage1-test")) {
-          _appRegion = ".stage1-test."+a[2]+".bluemix.net"
-        }else if (appReg.includes("stage1")) {
-          _appRegion = ".stage1."+a[2]+".bluemix.net"
-        }else if (appReg.includes("ng")) {
-          _appRegion = ".ng.bluemix.net"
-        }else if (appReg.includes("eu-gb")) {
-          _appRegion = ".eu-gb.bluemix.net"
-        }else if (appReg.includes("au-syd")) {
-          _appRegion = ".au-syd.bluemix.net"
+            _appRegion = ".stage1-test." + a[2] + ".bluemix.net"
+        } else if (appReg.includes("stage1")) {
+            _appRegion = ".stage1." + a[2] + ".bluemix.net"
+        } else if (appReg.includes("ng")) {
+            _appRegion = ".ng.bluemix.net"
+        } else if (appReg.includes("eu-gb")) {
+            _appRegion = ".eu-gb.bluemix.net"
+        } else if (appReg.includes("au-syd")) {
+            _appRegion = ".au-syd.bluemix.net"
         }
-      }
+    }
 
-      String.prototype.hashCode = function() {
-        var hash = 0, i, chr, len;
+    String.prototype.hashCode = function() {
+        var hash = 0,
+            i, chr, len;
         if (this.length === 0) return hash;
         for (i = 0, len = this.length; i < len; i++) {
-          chr   = this.charCodeAt(i);
-          hash  = ((hash << 5) - hash) + chr;
-          hash |= 0; // Convert to 32bit integer
+            chr = this.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
         }
         return hash;
-      };
-      function generateUUID (token){
+    };
+
+    function generateUUID(token) {
 
         var dateTime = new Date().getTime();
-        if(window.performance && typeof window.performance.now === "function"){
-          dateTime += performance.now(); //use high-precision timer if available
+        if (window.performance && typeof window.performance.now === "function") {
+            dateTime += performance.now(); //use high-precision timer if available
         }
 
         var hostname = window.location.hostname
@@ -906,110 +941,168 @@ function BMSPush(){
         arrayData.push(String(hostname).hashCode())
         arrayData.push(String(_platform).hashCode())
 
-        var finalString = arrayData.join("").replace(/[-.]/g , '').replace(/[,.]/g , '')
+        var finalString = arrayData.join("").replace(/[-.]/g, '').replace(/[,.]/g, '')
         var uuid = "";
-        for( var i=0; i < 32; i++ ){
-          uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
+        for (var i = 0; i < 32; i++) {
+            uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
         }
-        if(_isExtension){
-          chrome.storage.local.set({'deviceId':uuid})
-        }else{
-          localStorage.setItem("deviceId", uuid);
+        if (_isExtension) {
+            chrome.storage.local.set({
+                'deviceId': uuid
+            })
+        } else {
+            localStorage.setItem("deviceId", uuid);
         }
         _deviceId = uuid;
         return _deviceId;
-      }
-
-      function validateInput(stringValue) {
-        return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false:true;
-      }
-
-      function printLog (Result,data){
-        if (isDebugEnabled == true) {
-          var resultString = Result ? Result : " ";
-          var additionalData = data ? data : "";
-          console.log("Response : ",resultString," ",additionalData);
-        }
-      }
     }
 
-    var BMSPushBackground = {
-      init:function () {},
-      onMessageReceived: function(message) {
+    function validateInput(stringValue) {
+        return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false : true;
+    }
+
+    function printLog(Result, data) {
+        if (isDebugEnabled == true) {
+            var resultString = Result ? Result : " ";
+            var additionalData = data ? data : "";
+            console.log("Response : ", resultString, " ", additionalData);
+        }
+    }
+}
+
+var BMSPushBackground = {
+    init: function() {},
+    onMessageReceived: function(message) {
         var messageString = JSON.stringify(message, null, 4);
         BMSPushBackground.printLogExt("Notification Received:" + messageString);
         var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
-        function createChromeNotification(msgIconUrl){
-        	var messageUrl =  message.data.url ? message.data.url : ""
-                chrome.storage.local.set({'messageUrl':messageUrl})
-                var notification = {
-                  title: msgtitle,
-                  iconUrl: msgIconUrl,
-                  type: 'basic',
-                  message: message.data.alert
-                };
-                chrome.notifications.create(BMSPushBackground.getNotificationId(), notification, function(){});
+
+        function createChromeNotification(msgIconUrl) {
+            var messageUrl = message.data.url ? message.data.url : ""
+            chrome.storage.local.set({
+                'messageUrl': messageUrl
+            })
+            var notification = {
+                title: msgtitle,
+                iconUrl: msgIconUrl,
+                type: 'basic',
+                message: message.data.alert
+            };
+            BMSPushBackground.printLogExt(message.data.payload);
+            let jsonPayload =JSON.parse(message.data.payload);
+            BMSPushBackground.printLogExt(jsonPayload);
+			let nid = jsonPayload.nid;
+			
+            chrome.notifications.create(nid, notification, function(notificationId) {
+            	chrome.storage.local.get('deviceId', function(result) {
+                    _deviceId = result.deviceId;
+                    let statusObj = {'deviceId': _deviceId, 'status': 'SEEN'};
+                    BMSPushBackground.put('/messages/' + notificationId, function(res) {
+      	                if (res.status == 200 || res.status == 201) {
+      	                	BMSPushBackground.printLogExt('message status is reported');
+      	                } else {
+      	                	BMSPushBackground.printLogExt('failure reporting message' + res.responseText);
+      	                }
+      	            },statusObj, null);
+            	});
+            	
+            });
+            
+            
         }
-        
+
         var mshIconUrl = message.data.iconUrl;
         if (message.data.iconUrl == null) {
-          var icons = chrome.runtime.getManifest().icons;
-          mshIconUrl = icons["128"];
-          if (mshIconUrl == null) {
-            mshIconUrl = icons["48"];
-            if (mshIconUrl == null){
-              mshIconUrl = icons["16"];
+            var icons = chrome.runtime.getManifest().icons;
+            mshIconUrl = icons["128"];
+            if (mshIconUrl == null) {
+                mshIconUrl = icons["48"];
+                if (mshIconUrl == null) {
+                    mshIconUrl = icons["16"];
+                }
             }
-          }
-          createChromeNotification(mshIconUrl);
-        }
-        else {
-        	//Download the image as BLOB and create a BLOB URL
+            createChromeNotification(mshIconUrl);
+        } else {
+            //Download the image as BLOB and create a BLOB URL
             var xhr = new XMLHttpRequest();
             xhr.open("GET", message.data.iconUrl);
             xhr.responseType = "blob";
             xhr.onload = function(e) {
-            	var urlCreator = window.URL || window.webkitURL;
-            	var imageUrl = urlCreator.createObjectURL(this.response);
-            	createChromeNotification(imageUrl);
+                var urlCreator = window.URL || window.webkitURL;
+                var imageUrl = urlCreator.createObjectURL(this.response);
+                createChromeNotification(imageUrl);
             };
             xhr.send();
         }
-      },
-      getNotificationId:function() {
-        var id = Math.floor(Math.random() * 9007199254740992) + 1;
-        return id.toString();
-      },
+    },
 
-      notificationOpened:function(notifiationId) {
-        chrome.notifications.clear(notifiationId, function(){});
-        chrome.storage.local.get('messageUrl', function (result) {
-          var openUrl = result.url? result.url : "";
-          var urlObject = {url: openUrl};
-          if (chrome.browser){
-            chrome.browser.openTab(urlObject);
-          }
-          else{
-            chrome.tabs.create(urlObject);
-          }
-          return true;
+    notificationOpened: function(notificationId) {
+        chrome.notifications.clear(notificationId, function() {});
+        chrome.storage.local.get('deviceId', function(result) {
+            _deviceId = result.deviceId;
+            let statusObj = {'deviceId': _deviceId, 'status': 'OPEN'};
+            BMSPushBackground.put('/messages/' + notificationId, function(res) {
+	                if (res.status == 200 || res.status == 201) {
+	                	BMSPushBackground.printLogExt('message status is reported');
+	                } else {
+	                	BMSPushBackground.printLogExt('failure reporting message' + res.responseText);
+	                }
+	            },statusObj, null);
+    	});
+        chrome.storage.local.get('messageUrl', function(result) {
+            var openUrl = result.url ? result.url : "";
+            var urlObject = {
+                url: openUrl
+            };
+            if (chrome.browser) {
+                chrome.browser.openTab(urlObject);
+            } else {
+                chrome.tabs.create(urlObject);
+            }
+            return true;
         });
-      },
+    },
 
-      notification_onClicked:function(notifiationId) {
-        BMSPushBackground.printLogExt("Closing Notification with Id :",notifiationId);
+    notification_onClicked: function(notifiationId) {
+        BMSPushBackground.printLogExt("Closing Notification with Id :", notifiationId);
         BMSPushBackground.notificationOpened(notifiationId);
-      },
+    },
 
-      notifiation_buttonClicked:function(notifiationId, buttonIndex) {
-        BMSPushBackground.printLogExt("Clicked notifications button with index: ",buttonIndex);
+    notifiation_buttonClicked: function(notifiationId, buttonIndex) {
+        BMSPushBackground.printLogExt("Clicked notifications button with index: ", buttonIndex);
         BMSPushBackground.notificationOpened(notifiationId);
-      },
-      printLogExt:function (Result,data){
-        if (isDebugEnabled) {
-          var resultString = Result ? Result : " ";
-          var additionalData = data ? data : "";
-          console.log("Response : ",resultString," ",additionalData);
-        }
-      }
+    },
+    printLogExt: function(Result, data) {
+            var resultString = Result ? Result : " ";
+            var additionalData = data ? data : "";
+            console.log("Response : ", resultString, " ", additionalData);
+    },
+    put: function(action, callback, data, headers) {
+        return BMSPushBackground.callPushRest('PUT', callback, action, data, headers);
+    },
+    callPushRest: function(method, callback, action, data, headers) {
+    	chrome.storage.local.get('_push_url', function(result){
+    		var url = result._push_url;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4) {
+                    callback(xmlHttp);
+                }
+            }
+            xmlHttp.open(method, url + action, true); // true for asynchronous
+            xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
+            chrome.storage.local.get('_pushClientSecret', function(result){
+            	_pushClientSecret = result._pushClientSecret;
+            	if (BMSPushBackground.validateInput(_pushClientSecret)) {
+                    xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
+                }
+                xmlHttp.send(JSON.stringify(data));
+            });
+            
+    	});
+        
+    },
+    validateInput: function(stringValue) {
+        return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false : true;
+    }
 };
