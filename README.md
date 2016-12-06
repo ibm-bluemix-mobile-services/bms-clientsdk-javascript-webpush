@@ -69,13 +69,15 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
     * Add the `BMSPushSDK.js` in the `background.scripts`.
     * Change the `manifest_Chrome_Ext.json` to `manifest.json`.
 
-2. In the `background.js` file add the following to receive push notifications
+2. In your `Javascript` file add the following to receive push notifications
 
    ```
    chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
    chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
    chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
    ```
+
+>**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
 
 ##Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
 
@@ -98,7 +100,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
         "appGUID":"push app GUID",
         "appRegion":"Region where service hosted",
         "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
-	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push 
+	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push
     }
     bmsPush.initialize(params, callback)
 ```
