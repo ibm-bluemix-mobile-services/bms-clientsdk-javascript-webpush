@@ -10,49 +10,92 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-var ports;
+//import "bmsutils";
+function displayNotification(event) {
+    var messageJson = event.data.json();
+    var title = messageJson.title ? messageJson.title : "New message";
+    var imageUrl = messageJson.iconUrl ? messageJson.iconUrl : "images/icon.png";
+    var tagJson = messageJson.payload;
+    var tag = tagJson.tag ? tagJson.tag : "";
+    var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
+    var payloadData = messageJson.payload ? messageJson.payload : "Example message"
+    self.registration.showNotification(title, {
+        body: bodyAlert,
+        icon: imageUrl,
+        data: payloadData,
+        tag: tag
+    });
+    return Promise.resolve();
+}
+
+
+function triggerSeenEvent(strMsg) {
+    send_message_to_all_clients("msgEventSeen:" +strMsg);
+}
+
+function triggerOpenEvent(strMsg) {
+    send_message_to_all_clients("msgEventOpen:" +strMsg);
+}
+
+function onPushNotificationReceived(event) {
+    console.log('Push notification received : ', event);
+    if (event.data) {
+        console.log('Event data is : ', event.data.text());
+    }
+    event.waitUntil(displayNotification(event).then(() => triggerSeenEvent(event.data.text())));
+};
+
+self.addEventListener('push', onPushNotificationReceived);
+
+function send_message_to_client(client, msg){
+    return new Promise(function(resolve, reject){
+        var msg_chan = new MessageChannel();
+
+        msg_chan.port1.onmessage = function(event){
+            if(event.data.error){
+                reject(event.data.error);
+            }else{
+                resolve(event.data);
+            }
+        };
+
+        client.postMessage(msg, [msg_chan.port2]);
+    });
+}
+
+function send_message_to_all_clients(msg){
+    clients.matchAll().then(clients => {
+        clients.forEach(client => {
+            send_message_to_client(client, msg);
+        })
+    });
+}
+
 var i = 0;
 self.addEventListener('install', function(event) {
-  self.skipWaiting();
-  console.log('Installed Service Worker : ', event);
-  //event.postMessage("SW Says 'Hello back!'");
+    self.skipWaiting();
+    console.log('Installed Service Worker : ', event);
+    //event.postMessage("SW Says 'Hello back!'");
 });
 
 self.addEventListener('message', function(event) {
-  console.log(event.data);
-  ports =  event.ports[0];
+    console.log("The message is " + event.data + " port is " + event.ports[0]);
+    replyPort = event.ports[0];
 });
 
 self.addEventListener('activate', function(event) {
-  console.log('Activated Service Worker : ', event);
+    console.log('Activated Service Worker : ', event);
+    event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('push', function(event) {
-  console.log('Push message received : ', event);
-  if (event.data) {
-    console.log('Event data is : ', event.data.text());
-  }
-  var messageJson = event.data.json();
-  var title = messageJson.title ? messageJson.title : "New message";
-  var imageUrl = messageJson.iconUrl ? messageJson.iconUrl : "images/icon.png";
-  var tagJson = messageJson.payload;
-  var tag = tagJson.tag ? tagJson.tag : "";
-  var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
-  var payloadData = messageJson.payload ? messageJson.payload : "Example message"
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body: bodyAlert,
-      icon: imageUrl,
-      data:payloadData,
-      tag: tag
-    }));
-  });
-
-  self.addEventListener('notificationclick', function(event) {
-    console.log('Notification click: tag ', event.notification.tag);
+self.addEventListener('notificationclick', function(event) {
+    console.log('Notification clicked with tag' + event.notification.tag + " and data " + event.notification.data);
+    let nidjson = event.notification.data;
     event.notification.close();
-  });
+    event.waitUntil(triggerOpenEvent(nidjson));
+});
 
-  self.addEventListener('pushsubscriptionchange', function() {
-  ports.postMessage("Update the registration")
+self.addEventListener('pushsubscriptionchange', function() {
+	console.log('Push Subscription change');
+	send_message_to_all_clients("updateRegistration:");
 });
