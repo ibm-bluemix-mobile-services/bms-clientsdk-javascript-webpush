@@ -470,8 +470,6 @@ function BMSPush() {
           		  
           		  if(command === 'msgEventOpen' || command === 'msgEventSeen') {
           			  let statusObj = {'deviceId': _deviceId, 'status': statusStr};
-          			  printLog("status str " + JSON.stringify(statusObj));
-          			  printLog("The nid of the message is " + nid);
           			  put('/messages/' + nid, function(res) {
           	                if (res.status == 200 || res.status == 201) {
           	                    printLog('message status is reported');
@@ -482,7 +480,6 @@ function BMSPush() {
           	            },statusObj, null);
           		  }
           		  else {
-          			  printLog('Update called');
           			  update();
           		  }
                     //update();
@@ -545,9 +542,7 @@ function BMSPush() {
         // Update status to subscribe current user on server, and to let
         // other users know this user has subscribed
         printLog('Subscription data is : ', JSON.stringify(subscription));
-        printLog('endpoint:', subscription.endpoint);
         var subscriptionStr = JSON.stringify(subscription).replace(/"/g, "\\\"");
-        printLog('subscription as string: ', subscriptionStr);
 
         _platform = "";
         var token;
@@ -584,7 +579,7 @@ function BMSPush() {
             }
             var device = {}
             if (_isUserIdEnabled == true) {
-                registerDeviceWithUserId({
+                registerDevice({
                     "deviceId": _deviceId,
                     "token": token,
                     "platform": _platform,
@@ -606,7 +601,7 @@ function BMSPush() {
                 _deviceId = result.deviceId;
 
                 if (_isUserIdEnabled == true) {
-                    registerDeviceWithUserId({
+                    registerDevice({
                         "deviceId": _deviceId,
                         "token": token,
                         "platform": _platform,
@@ -629,7 +624,7 @@ function BMSPush() {
 
     
     function getDevice(deviceId) {
-        printLog('deviceId Device Registration Result :' + deviceId);
+        printLog('Request for get device for the deviceId :' + deviceId);
         return new Promise(function(resolve, reject) {
             get("/devices/" + deviceId, function(res) {
                 printLog('previous Device Registration Result :', res);
@@ -667,76 +662,43 @@ function BMSPush() {
         });
     }
 
+    /* Register Device with/ without userId*/
 
-
-
-    /* Register Device without userId*/
     function registerDevice(device, callbackM) {
 
-        printLog("registerDevice: Checking the previous registration for the device :", device);
-        getDevice(device.deviceId, get).then(existingDevice => {
-            if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId) {
-                updateDevice(device, put).then((updatedDevice) => {
-                    printLog("Successfully updated device without userid");
-                    callbackM(getBMSPushResponse(updatedDevice, 200, ""));
-                }).catch((res) => {
-                    printLog("Error in udpating device without userid and the response is " + res);
-                    callbackM(getBMSPushResponse(res, status, "Error in registering device"));
-                });
-            } else {
-                printLog("Device is already registered and device registration parameters not changed. without userid:");
-                callbackM(getBMSPushResponse(JSON.stringify(existingDevice), 201, ""));
-            }
-        }, errorObj => {
-            if (errorObj.status == 404) {
-                printLog('Starting New Device Registration  without userid:');
-                registerNewDevice(device, post).then((updatedDevice) => {
-                    printLog("Successfully registered device without userid");
-                    callbackM(getBMSPushResponse(updatedDevice, 201, ""));
-                }).catch((res) => {
-                    printLog("Error in registering device without userid and the response is " + res);
-                    callbackM(getBMSPushResponse(res, status, "Error in registering device"));
-                });
-            } else if ((errorObj.status == 406) || (errorObj.status == 500)) {
-                printLog("Error while verifying previuos device registration without userid and the response is ,", errorObj);
-                callbackM(getBMSPushResponse(errorObj, status, "Error while verifying previuos device registration"));
-            }
-        });
-    }
-
-    /* Register Device with userId*/
-
-    function registerDeviceWithUserId(device, callbackM) {
-
-        printLog("registerDeviceWithUserId: Checking the previous registration :", device);
+        printLog("registerDevice: Checking the previous registration :", device);
         _userId = device.userId;
         if (validateInput(_pushClientSecret) && validateInput(_userId)) {
             getDevice(device.deviceId, get).then(existingDevice => {
-                if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId || existingDevice.userId != device.userId) {
+                if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId || (device.hasOwnProperty('userId') && (existingDevice.userId != device.userId))) {
                     updateDevice(device, put).then((updatedDevice) => {
-                        printLog("Successfully updated device without userid");
+                        printLog("Successfully updated device");
                         callbackM(getBMSPushResponse(updatedDevice, 200, ""));
                     }).catch((res) => {
-                        printLog("Error in udpating device without userid and the response is " + res);
-                        callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                        printLog("Error in udpating device and the response is " + res);
+                        callbackM(getBMSPushResponse(res, status, "Error"));
                     });
                 } else {
-                    printLog("Device is already registered and device registration parameters not changed. without userid:");
+                    printLog("Device is already registered and device registration parameters not changed.");
                     callbackM(getBMSPushResponse(JSON.stringify(existingDevice), 201, ""));
                 }
             }, errorObj => {
                 if (errorObj.status == 404) {
-                    printLog('Starting New Device Registration  without userid:');
+                    printLog('Starting New Device Registration');
                     registerNewDevice(device, post).then((updatedDevice) => {
-                        printLog("Successfully registered device without userid");
+                        printLog("Successfully registered device");
                         callbackM(getBMSPushResponse(updatedDevice, 201, ""));
                     }).catch((res) => {
-                        printLog("Error in registering device without userid and the response is " + res);
-                        callbackM(getBMSPushResponse(res, status, "Error in registering device"));
+                        printLog("Error in registering device and the response is " + res);
+                        callbackM(getBMSPushResponse(res, status, "Error"));
                     });
                 } else if ((errorObj.status == 406) || (errorObj.status == 500)) {
-                    printLog("Error while verifying previuos device registration without userid and the response is ,", errorObj);
-                    callbackM(getBMSPushResponse(errorObj, status, "Error while verifying previuos device registration"));
+                    printLog("Error while verifying previous device registration and the response is ,", errorObj);
+                    callbackM(getBMSPushResponse(errorObj, status, "Error"));
+                } else if(errorObj.status == 0) {
+                	//OPTIONS failed... Possible incorrect appId
+                	printLog("Error while verifying previous device registration and the response is ,", errorObj);
+                    callbackM(getBMSPushResponse(errorObj, status, "Error"));
                 }
             });
         } else {
@@ -864,7 +826,6 @@ function BMSPush() {
     API calls start here
     */
     function get(action, callback, data, headers) {
-    	printLog("Get call");
         return callPushRest('GET', callback, action, data, headers);
     }
 
@@ -882,7 +843,7 @@ function BMSPush() {
 
 
     function callPushRest(method, callback, action, data, headers) {
-    	printLog("callPushRest");
+    	
         var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
@@ -960,7 +921,10 @@ function BMSPush() {
     function validateInput(stringValue) {
         return (stringValue === undefined) || (stringValue == null) || (stringValue.length <= 0) || (stringValue == '') ? false : true;
     }
-
+    
+    function isDeviceUpdated() {
+    	
+    }
     function printLog(Result, data) {
         if (isDebugEnabled == true) {
             var resultString = Result ? Result : " ";
