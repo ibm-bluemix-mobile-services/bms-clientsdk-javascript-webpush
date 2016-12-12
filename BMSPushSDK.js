@@ -668,7 +668,7 @@ function BMSPush() {
 
         printLog("registerDevice: Checking the previous registration :", device);
         _userId = device.userId;
-        if (validateInput(_pushClientSecret) && validateInput(_userId)) {
+        if (validateInput(_pushClientSecret)) {
             getDevice(device.deviceId, get).then(existingDevice => {
                 if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId || (device.hasOwnProperty('userId') && (existingDevice.userId != device.userId))) {
                     updateDevice(device, put).then((updatedDevice) => {
@@ -702,8 +702,8 @@ function BMSPush() {
                 }
             });
         } else {
-            printLog("Please provide valid userId and clientSecret.");
-            callbackM(getBMSPushResponse("Please provide valid userId and clientSecret.", 401, "Error"));
+            printLog("Please provide valid userId or clientSecret.");
+            callbackM(getBMSPushResponse("Please provide valid userId or clientSecret.", 401, "Error"));
         }
     }
 
