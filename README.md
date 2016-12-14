@@ -1,6 +1,6 @@
 #bms-clientsdk-javascript-push
 
-Enable Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
+Enable Safari, Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
 notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
 JavaScript Push SDK to further develop your Web applications.
 
@@ -69,7 +69,7 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
     * Add the `BMSPushSDK.js` in the `background.scripts`.
     * Change the `manifest_Chrome_Ext.json` to `manifest.json`.
 
-2. In the `background.js` file add the following to receive push notifications
+2. In your `Javascript` file add the following to receive push notifications
 
    ```
    chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
@@ -77,7 +77,9 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
    chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
    ```
 
-##Initializing the Web Push SDK (Chrome, FireFox, Chrome Apps & Chrome Extensions)
+>**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
+
+##Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
 
 Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
 
@@ -97,7 +99,8 @@ The `App Region` specifies the location where the Push service is hosted. You ca
     var initParams = {
         "appGUID":"push app GUID",
         "appRegion":"Region where service hosted",
-        "clientSecret":"push app client secret" // optional parameter. This value is needed for userId based notifications registration.
+        "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
+	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push
     }
     bmsPush.initialize(params, callback)
 ```
