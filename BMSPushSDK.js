@@ -30,6 +30,7 @@ var BMSPushResponse = {};
 var _platform;
 var _websitePushIDSafari;
 var _getMethod;
+var _bluemixDeviceId;
 
 function BMSPush() {
   /**
@@ -39,6 +40,7 @@ function BMSPush() {
   * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
   * @param clientSecret - The push service client secret value.
   * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
+  * @param deviceId - Optional parameter for deviceId.
   */
   this.initialize = function(params, callback) {
     printLog("Enter - initialize");
@@ -47,6 +49,7 @@ function BMSPush() {
     _appRegion = params.appRegion ? params.appRegion : "";
     _pushClientSecret = params.clientSecret ? params.clientSecret : "";
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
+    _bluemixDeviceId = params.deviceId ? params.deviceId : "";
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
@@ -57,8 +60,14 @@ function BMSPush() {
         printLog("User has not provided a valid client secret");
       }
 
+
       if (getBrowser() === CHROME_EXTENSION) {
         _isExtension = true;
+        chrome.storage.local.set({
+          'deviceId': _bluemixDeviceId
+        })
+      }else {
+        localStorage.setItem("deviceId", _bluemixDeviceId);
       }
 
       if (_isExtension) {
