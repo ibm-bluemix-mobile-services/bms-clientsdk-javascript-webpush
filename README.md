@@ -1,12 +1,15 @@
-#bms-clientsdk-javascript-push
+# bms-clientsdk-javascript-push
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
+[![](https://img.shields.io/badge/bluemix-powered-blue.svg)](https://bluemix.net)
 
 Enable Safari, Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
 notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
 JavaScript Push SDK to further develop your Web applications.
 
-###Initialize SDK
+### Initialize SDK
 
-####Chrome & Firefox Websites
+#### Chrome & Firefox Websites
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
@@ -51,7 +54,7 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 
 	```
 
-####Chrome App and Extensions.
+#### Chrome App and Extensions.
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
@@ -79,7 +82,7 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 
 >**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
 
-##Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
+## Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
 
 Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
 
@@ -100,12 +103,13 @@ The `App Region` specifies the location where the Push service is hosted. You ca
         "appGUID":"push app GUID",
         "appRegion":"Region where service hosted",
         "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
-	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push
+	      "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
+        "deviceId":"Optional deviceId for device registration"
     }
     bmsPush.initialize(params, callback)
 ```
 
-##Registering Web application.
+## Registering Web application.
 
 Use the `register()` API to register the device with Bluemix Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard under Chrome setup .
 
@@ -129,8 +133,8 @@ Use the following code snippet to register in Bluemix push notifications service
 	})
 
 ```
-
->Note : For Debugging use `bmsPush.isDebugEnable(true)`.
+>**Note**: Remember to keep custom DeviceId <strong>unique</strong> for each device.
+For Debugging use `bmsPush.isDebugEnable(true)`.
 
 
 For `UserId` based registration use the following code snippet,
@@ -151,7 +155,7 @@ For `UserId` based registration use the following code snippet,
   })
 ```
 
-##Subscribing for tags.
+## Subscribing for tags.
 
 To get the available tags use the `retrieveAvailableTags()` method.
 
@@ -182,7 +186,7 @@ To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array
   }
 ```
 
-##Unregister from Bluemix Push notifications Service
+## Unregister from Bluemix Push notifications Service
 
 To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
 
@@ -192,8 +196,29 @@ To unregister the device from receiving push notification add the following `unR
   }
 ```
 
+### Samples & videos
+
+* Please visit for samples - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
+
+* Video Tutorials Available here - [Bluemix Push Notifications](https://www.youtube.com/channel/UCRr2Wou-z91fD6QOYtZiHGA)
+
+### Learning More
+
+* Visit the **[Bluemix Developers Community](https://developer.ibm.com/bluemix/)**.
+
+* [Getting started with IBM MobileFirst Platform for iOS](https://www.ng.bluemix.net/docs/mobile/index.html)
+
+### Connect with Bluemix
+
+[Twitter](https://twitter.com/ibmbluemix) |
+[YouTube](https://www.youtube.com/playlist?list=PLzpeuWUENMK2d3L5qCITo2GQEt-7r0oqm) |
+[Blog](https://developer.ibm.com/bluemix/blog/) |
+[Facebook](https://www.facebook.com/ibmbluemix) |
+[Meetup](http://www.meetup.com/bluemix/)
+
 
 =======================
+
 Copyright 2016-17 IBM Corp.
 
 Licensed under the Apache License, Version 2.0 (the "License");
