@@ -1,26 +1,63 @@
-# bms-clientsdk-javascript-push
+Bluemix Push Notifications Web SDK
+===================================================
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
 [![](https://img.shields.io/badge/bluemix-powered-blue.svg)](https://bluemix.net)
 
-Enable Safari, Chrome & Firefox web browser applications to receive Bluemix Push notifications and, send Bluemix Push
-notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
-JavaScript Push SDK to further develop your Web applications.
+The [Bluemix Push Notifications service](https://console.ng.bluemix.net/catalog/services/push-notifications) provides a unified push service to send real-time notifications to mobile and web applications. The SDK enables  Safari, Chrome & Firefox web browser applications to receive push notifications sent from the service.Before starting to configure Web SDK follow the [Bluemix Push service setup guide](https://console.ng.bluemix.net/docs/services/mobilepush/index.html#gettingstartedtemplate)
 
-### Initialize SDK
+## Contents
 
-#### Chrome & Firefox Websites
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Setup Client Application](#setup-client-application)
+  - [Setup Chrome Firefox and Safari Websites](#setup-chrome-firefox-and-safari-websites)
+    - [Chrome and Firefox Websites](#chrome-and-firefox-websites)
+    - [Safari Websites](#safari-websites)
+    - [Chrome App and Extensions](#chrome-app-and-extensions)
+      - [Chrome App](#chrome-app)
+      - [Chrome Extensions](#chrome-extensions)
+  - [Initializing the Web Push SDK](#initializing-the-web-push-sdk)
+  - [Registering Web application](#registering-web-application)
+    - [Register Without UserId](#register-without-userid)
+    - [Register With UserId](#register-with-userid)
+    - [Unregistering the Device from Push Notification](#unregistering-the-device-from-push-notification)
+    - [Unregistering the Device from UserId](#unregistering-the-device-from-userid)
+  - [Push Notification service tags](#push-notification-service-tags)
+    - [Retrieve Available tags](#retrieve-available-tags)
+    - [Subscribe to Available tags](#subscribe-to-available-tags)
+    - [Retrieve Subscribed tags](#retrieve-subscribed-tags)
+    - [Unsubscribing from tags](#unsubscribing-from-tags)
+- [Samples and Videos](#samples-and-videos)
 
-For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
-[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest_Website.json`.
+
+## Requirements
+
+* Firefox 49+
+* Chrome 54+
+* Safari 9.1+
+
+## Installation
+
+ Download the [bms-clientsdk-javascript-webpush](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) files.
+
+## Setup Client Application
+
+### Setup Chrome Firefox and Safari Websites
+
+Before going to the client configuration complete [service configuration](https://console.ng.bluemix.net/docs/services/mobilepush/t__main_push_config_provider.html#configure-credential-for-browsers) . For installing the Javascript SDK in Chrome Firefox and Safari Websites application follow the steps.
+
+#### Chrome and Firefox Websites
+
+Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest_Website.json` files to your project root folder.
 
 1. Edit the `manifest_Website.json` file
 
-	For Chrome browser do the following,
+	For `Chrome browser` do the following,
 
 	* Change `name` to your Website's name
-	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](https://console.ng.bluemix.net/docs/services/mobilepush/t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
+	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](https://console.ng.bluemix.net/docs/services/mobilepush/t_push_provider_android.html)). The `gcm_sender_id` value contains only numbers.
 
 		```
 		{
@@ -29,36 +66,47 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 		}
 		```
 
-	For Firefox browser add the following values in `manifest_Website.json` file.
+	For `Firefox browser` add the following values in `manifest_Website.json` file.
 
 	* Change `name` to your Website's name.
 
-        ```
-        {
-        	"name": "YOUR_WEBSITE_NAME"
-        }
-        ```
+      ```
+      {
+      	"name": "YOUR_WEBSITE_NAME"
+      }
+      ```
 2. Change the `manifest_Website.json` file name to `manifest.json`.        
 
-3. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` to your root directory.
-
-4. Include the `manifest.json` in `<head>` tag of your html file .
+3. Include the `manifest.json` in `<head>` tag of your html file .
 
 	```
-	<link rel="manifest" href="manifest.json">
-	```
-5. Include Bluemix Web push SDK to the web application from github.
-
-	```
-  <script src="BMSPushSDK.js" async></script>
+	   <link rel="manifest" href="manifest.json">
 
 	```
 
-#### Chrome App and Extensions.
+4. Include Bluemix Web push SDK to the script ,
+
+	```
+    <script src="BMSPushSDK.js" async></script>
+
+	```
+
+#### Safari Websites
+
+  For safari you just have to add the `BMSPushSDK.js` in the `html` file
+
+  ```
+    <script src="BMSPushSDK.js" async></script>
+
+  ```
+
+#### Chrome App and Extensions
 
 For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
 
-[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` (For chrome Extensions) or `manifest_Chrome_App.json` (for Chrome Apps).
+##### Chrome App
+
+Add the `BMSPushSDK.js` and  `manifest_Chrome_App.json` .
 
 1. Configure manifest file,
 
@@ -66,7 +114,23 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
     * Add the `BMSPushSDK.js` in the `app.background.scripts`.
     * Change the `manifest_Chrome_App.json` to `manifest.json`.
 
-    ----------------------------------------------------------------------------------------------------
+
+2. In your `Javascript` file add the following to receive push notifications
+
+   ```
+   chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
+   chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
+   chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
+
+   ```
+
+>**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
+
+##### Chrome Extensions
+
+Add the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` .
+
+1. Configure manifest file,
 
     * For `Chrome Extensions` in the `manifest_Chrome_Ext.json` file provide `name`, `description` , and `icons`.
     * Add the `BMSPushSDK.js` in the `background.scripts`.
@@ -78,15 +142,13 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
    chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
    chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
    chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
+
    ```
 
->**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
+### Initializing the Web Push SDK
 
-## Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
+Initialise the push SDK with Bluemix push notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
 
-Initialse the push SDK with Bluemix push notifications service `app GUID` and `app Region`.  
-
-To get your app GUID, select the Configuration option in the navigation pane of your push services and click **Mobile Options**.Modify the code snippet to use your Bluemix push notifications service appGUID parameter.
 
 The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
@@ -107,15 +169,19 @@ The `App Region` specifies the location where the Push service is hosted. You ca
         "deviceId":"Optional deviceId for device registration"
     }
     bmsPush.initialize(params, callback)
+
 ```
 
-## Registering Web application.
+>**Note**:For Debugging use `bmsPush.isDebugEnable(true)`.
 
-Use the `register()` API to register the device with Bluemix Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the Bluemix Push Notifications service web configuration dashboard under Chrome setup .
 
-For registering from Firefox , add Web Site URL in the Bluemix Push Notifications service web configuration dashboard under Firefox setup.
+### Registering Web application
 
-Use the following code snippet to register in Bluemix push notifications service.
+Use the `register()` or `registerWithUserId()` API to register the device with Bluemix Push Notifications service.
+
+#### Register Without UserId
+
+To register without userId use the following pattern
 
 ```
 	var bmsPush = new BMSPush()
@@ -128,14 +194,14 @@ Use the following code snippet to register in Bluemix push notifications service
     "clientSecret":"push app client secret"
 	}
 	bmsPush.initialize(initParams, callback)
+
 	bmsPush.register(function(response) {
 		alert(response.response)
 	})
 
 ```
->**Note**: Remember to keep custom DeviceId <strong>unique</strong> for each device.
-For Debugging use `bmsPush.isDebugEnable(true)`.
 
+#### Register With UserId
 
 For `UserId` based registration use the following code snippet,
 
@@ -150,12 +216,36 @@ For `UserId` based registration use the following code snippet,
     "clientSecret":"push app client secret"
   }
   bmsPush.initialize(initParams, callback)
+
   bmsPush.registerWithUserId("your UserId",function(response) {
     alert(response.response)
   })
 ```
+##### WithUserId
 
-## Subscribing for tags.
+- The user identifier value you want to register the device in the push service instance.
+
+>**Note**: If userId is provided the client secret value must be provided
+
+
+#### Unregistering the Device from Push Notification
+
+To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
+
+```
+  bmsPush.unRegisterDevice(function(response) {
+    alert(response.response)
+  }
+```
+
+#### Unregistering the Device from UserId
+
+ To unregister from the `UserId` based registration you have to call the registration method [without userId](#register-without-userid).
+
+
+### Push Notification service tags
+
+#### Retrieve Available tags
 
 To get the available tags use the `retrieveAvailableTags()` method.
 
@@ -169,8 +259,12 @@ To get the available tags use the `retrieveAvailableTags()` method.
     alert(tagsArray)
  })
 ```
+#### Subscribe to tags
 
-The tag subscription is handled by the `subscribe()` method. Pass the array of tag names as the parameter.
+The `subscribe()` API will subscribe the Web application for the list of given tags. After the device is subscribed to a particular tag, the device can receive any push notifications
+that are sent for that tag.
+
+Use the following code snippets into your Swift mobile application to subscribe a list of tags.
 
 ```
   bmsPush.subscribe(tagsArray,function(response) {
@@ -178,25 +272,33 @@ The tag subscription is handled by the `subscribe()` method. Pass the array of t
   })
 ```
 
+#### Retrieve Subscribed tags
+
+The `retrieveSubscriptions` API will return the list of tags to which the website is subscribed.
+
+Use the following code snippets into your Swift mobile application to get the  subscription list.
+
+```
+bmsPush.retrieveSubscriptions(function(response){
+
+   alert(response.response);
+
+ })
+
+ ```
+
+#### Unsubscribing from tags
+
 To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array of tag names as the parameter.
 
 ```
   bmsPush.unSubscribe(tagsArray,function(response) {
     alert(response.response)
   }
-```
-
-## Unregister from Bluemix Push notifications Service
-
-To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
 
 ```
-  bmsPush.unRegisterDevice(function(response) {
-    alert(response.response)
-  }
-```
 
-### Samples & videos
+## Samples & videos
 
 * Please visit for samples - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
 
