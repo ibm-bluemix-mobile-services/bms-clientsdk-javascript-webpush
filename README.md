@@ -1,4 +1,4 @@
-Bluemix Push Notifications Web SDK
+IBM Bluemix Push Notifications Web SDK
 ===================================================
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
