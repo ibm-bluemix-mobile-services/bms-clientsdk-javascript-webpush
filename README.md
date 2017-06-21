@@ -22,7 +22,7 @@ Ensure that you go through [Bluemix Push Notifications service documentation](ht
     - [Subscribe to tags](#subscribe-to-tags)
     - [Retrieve subscribed tags](#retrieve-subscribed-tags)
     - [Unsubscribing from tags](#unsubscribing-from-tags)
-- [Samples and Videos](#samples-and-videos)
+- [Samples and videos](#samples-and-videos)
 
 
 
@@ -270,7 +270,7 @@ To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array 
   }
 ```
 
-## Samples & videos
+## Samples and videos
 
 * For samples, visit - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
 
