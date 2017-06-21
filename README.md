@@ -10,17 +10,17 @@ Ensure that you go through [Bluemix Push Notifications service documentation](ht
 
 ## Contents
 
-- [Prerequisites](#requirements)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Initialize SDK](#initialize-web-push)
-	- [Initialize client Push SDK](#initialize-web-push-step-1)
-	- [Initialize web Push SDK](#initialize-web-push-step-2)
+- [Initialize SDK](#initialize-sdk)
+	- [Initialize client Push SDK](#initialize-client-push-sdk)
+	- [Initialize web Push SDK](#initialize-web-push-sdk)
 - [Register for notifications](#register-for-notifications)
-	- [Unregistering from notifications](#non-register-from-notifications)
-- [Push Notifications service tags](#notification-tags)
-    - [Retrieve Available tags](#retrieve-available-tags)
-    - [Subscribe to Available tags](#subscribe-to-available-tags)
-    - [Retrieve Subscribed tags](#retrieve-subscribed-tags)
+	- [Unregistering from notifications](#unregistering-from-notifications)
+- [Push Notifications service tags](#push-notification-service-tags)
+    - [Retrieve available tags](#retrieve-available-tags)
+    - [Subscribe to tags](#subscribe-to-tags)
+    - [Retrieve subscribed tags](#retrieve-subscribed-tags)
     - [Unsubscribing from tags](#unsubscribing-from-tags)
 - [Samples and Videos](#samples-and-videos)
 
