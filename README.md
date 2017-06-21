@@ -17,7 +17,7 @@ Ensure that you go through [Bluemix Push Notifications service documentation](ht
 	- [Initialize web Push SDK](#initialize-web-push-sdk)
 - [Register for notifications](#register-for-notifications)
 	- [Unregistering from notifications](#unregistering-from-notifications)
-- [Push Notifications service tags](#push-notification-service-tags)
+- [Push Notifications service tags](#push-notifications-service-tags)
     - [Retrieve available tags](#retrieve-available-tags)
     - [Subscribe to tags](#subscribe-to-tags)
     - [Retrieve subscribed tags](#retrieve-subscribed-tags)
@@ -36,7 +36,7 @@ Ensure that you go through [Bluemix Push Notifications service documentation](ht
 
 Download the [Push Notifications Web Client SDK package](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master).
 
-## Initilaize SDK
+## Initialize SDK
 
 Complete the following steps to initialize the SDK.
 
@@ -207,16 +207,16 @@ Use the `register()` or `registerWithUserId()` API to register the device with B
 >**Note**: If `userId` is provided, the client secret value must be provided.
 
 
-### Un-registering from notifications
+### Unregistering from notifications
 
-- To un-register from receiving notifications, add the following `unRegisterDevice()` method:
+- To unregister from receiving notifications, add the following `unRegisterDevice()` method:
 	```
 	bmsPush.unRegisterDevice(function(response) {
 	alert(response.response)
 	}
 	```
 
-- To un-register the device from `UserId` based registration, you have to call the registration method. See the `Register without userId option` in [Register for notifications](#registering-web-application).
+- To unregister the device from `UserId` based registration, you have to call the registration method. See the `Register without userId option` in [Register for notifications](#registering-web-application).
 
 
 ## Push Notifications service tags
