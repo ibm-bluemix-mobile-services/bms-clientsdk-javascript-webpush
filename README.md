@@ -58,20 +58,20 @@ Choose any of the following options, based on your browser:
 
 		- For Chrome browser:
 			```			
-					{
-						"name": "YOUR_WEBSITE_NAME",
-						"gcm_sender_id": "GCM_Sender_Id"
-					}
-					```
+			{
+				"name": "YOUR_WEBSITE_NAME",
+				"gcm_sender_id": "GCM_Sender_Id"
+			}
+			```
 
 			Change the `name` to your website's name and update the  `gcm_sender_id` to your Firebase Cloud Messaging (FCM) [sender ID] (https://console.ng.bluemix.net/docs/services/mobilepush/push_step_1.html#push_step_1_android). Note that the `gcm_sender_id` value contains only numbers.
 					
 
 		- For Firefox browser, add the following values in `manifest_Website.json` file.
 			```
-				 {
-      				"name": "YOUR_WEBSITE_NAME"
-				}
+			{
+      		"name": "YOUR_WEBSITE_NAME"
+			}
       		```
 
 			Change `name` to your website's name.
@@ -81,7 +81,7 @@ Choose any of the following options, based on your browser:
 
 	4. Include the `manifest.json` in `<head>` tag of your html file .
 		```
-		   <link rel="manifest" href="manifest.json">
+		 <link rel="manifest" href="manifest.json">
 		```
 	5. Include Bluemix Web push SDK to the script ,
 		```
@@ -168,19 +168,19 @@ Use the `register()` or `registerWithUserId()` API to register the device with B
 
 	To register without userId use the following pattern
 	```
-		var bmsPush = new BMSPush()
-		function callback(response) {
+	var bmsPush = new BMSPush()
+	function callback(response) {
+	alert(response.response)
+	}
+	var initParams = {
+		"appGUID":"push app GUID",
+		"appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret"
+	}
+	bmsPush.initialize(initParams, callback)
+	bmsPush.register(function(response) {
 		alert(response.response)
-		}
-		var initParams = {
-			"appGUID":"push app GUID",
-			"appRegion":"Region where service hosted",
-    	"clientSecret":"push app client secret"
-		}
-		bmsPush.initialize(initParams, callback)
-		bmsPush.register(function(response) {
-			alert(response.response)
-		})
+	})
 	```
 
 - Register with UserId
@@ -227,12 +227,12 @@ To retrieve all the available tags, use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    var jsonResponse = JSON.parse(response.response)
-    var tagsArray = []
-    for (i in jsonResponse.tags){
-      tagsArray.push(jsonResponse.tags[i].name)
-    }
-    alert(tagsArray)
+   var jsonResponse = JSON.parse(response.response)
+   var tagsArray = []
+   for (i in jsonResponse.tags){
+     tagsArray.push(jsonResponse.tags[i].name)
+   }
+   alert(tagsArray)
  })
 ```
 
@@ -243,8 +243,8 @@ The `subscribe()` API will subscribe the web application for a list of given tag
 Use the following code snippet in your application to subscribe a list of tags.
 
 ```
-  bmsPush.subscribe(tagsArray,function(response) {
-    alert(response.response)
+ bmsPush.subscribe(tagsArray,function(response) {
+  alert(response.response)
   })
 ```
 
@@ -285,7 +285,7 @@ To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array 
 ### Connect with Bluemix
 
 [Twitter](https://twitter.com/ibmbluemix) |
-[YouTube](https://www.youtube.com/playlist?list=PLzpeuWUENMK2d3L5qCITo2GQEt-7r0oqm) |
+[YouTube](https://www.youtube.com/watch?v=qusSM8KihNE) |
 [Blog](https://developer.ibm.com/bluemix/blog/) |
 [Facebook](https://www.facebook.com/ibmbluemix) |
 [Meetup](http://www.meetup.com/bluemix/)
