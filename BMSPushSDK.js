@@ -101,7 +101,7 @@ function BMSPush() {
     } else {
       printLog("Please provide a valid  appGUID or/and appRegion");
       setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error")
-      callback(PushResponse);
+      callback(BMSPushResponse);
     }
     printLog("Exit - initialize");
   };
