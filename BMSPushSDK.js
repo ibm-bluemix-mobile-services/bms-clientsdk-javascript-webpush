@@ -288,7 +288,7 @@ function BMSPush() {
     const SERVICE_WORKER = 'BMSPushServiceWorker.js';
 
     function getBrowser() {
-      if (window.navigator.userAgent.indexOf("Chrome") != -1 && chrome.runtime.getManifest) {
+      if (window.navigator.userAgent.indexOf("Chrome") != -1 && chrome.runtime && chrome.runtime.getManifest) {
         return CHROME_EXTENSION;
       }
       let userAgentOfBrowser = navigator.userAgent.toLowerCase();
