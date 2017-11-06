@@ -93,6 +93,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For US Dallas - `.ng.bluemix.net`
 - For UK - `.eu-gb.bluemix.net`
 - For Sydney - `.au-syd.bluemix.net`
+- For Germany - `.eu-db.bluemix.net`
 
 ```
     var bmsPush = new BMSPush()
