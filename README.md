@@ -1,12 +1,11 @@
-IBM Bluemix Push Notifications Web SDK
+IBM Cloud Push Notifications Web SDK
 ===================================================
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
-[![](https://img.shields.io/badge/bluemix-powered-blue.svg)](https://bluemix.net)
 
-The [Bluemix Push Notifications service](https://console.ng.bluemix.net/catalog/services/push-notifications) provides a unified push service to send real-time notifications to mobile and web applications. The SDK enables Safari, Chrome,  Firefox browsers and Chrome Apps & Extensions to receive push notifications sent from the service. 
+The [IBM Cloud Push Notifications service](https://console.ng.net/catalog/services/push-notifications) provides a unified push service to send real-time notifications to mobile and web applications. The SDK enables Safari, Chrome,  Firefox browsers and Chrome Apps & Extensions to receive push notifications sent from the service. 
 
-Ensure that you go through [Bluemix Push Notifications service documentation](https://console.ng.bluemix.net/docs/services/mobilepush/index.html#gettingstartedtemplate) before you start.
+Ensure that you go through [IBM Cloud Push Notifications service documentation](https://console.ng.net/docs/services/mobilepush/index.html#gettingstartedtemplate) before you start.
 
 ## Contents
 
@@ -44,13 +43,13 @@ Complete the following steps to initialize the SDK.
 
 Complete the following steps:
 
-Ensure that you go through [service configuration](https://console.ng.bluemix.net/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. 
+Ensure that you go through [service configuration](https://console.ng.net/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. 
 
 Choose any of the following options, based on your browser:
 
 - Chrome and Firefox web browsers
 
-	Ensure that you go through [service configuration](https://console.ng.bluemix.net/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. To install the Javascript SDK in Chrome and Firefox, complete the following steps:
+	Ensure that you go through [service configuration](https://console.ng.net/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. To install the Javascript SDK in Chrome and Firefox, complete the following steps:
 
 	1. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest_Website.json` files to your project root folder.
 
@@ -64,7 +63,7 @@ Choose any of the following options, based on your browser:
 			}
 			```
 
-			Change the `name` to your website's name and update the  `gcm_sender_id` to your Firebase Cloud Messaging (FCM) [sender ID] (https://console.ng.bluemix.net/docs/services/mobilepush/push_step_1.html#push_step_1_android). Note that the `gcm_sender_id` value contains only numbers.
+			Change the `name` to your website's name and update the  `gcm_sender_id` to your Firebase Cloud Messaging (FCM) [sender ID] (https://console.ng.net/docs/services/mobilepush/push_step_1.html#push_step_1_android). Note that the `gcm_sender_id` value contains only numbers.
 					
 
 		- For Firefox browser, add the following values in `manifest_Website.json` file.
@@ -83,7 +82,7 @@ Choose any of the following options, based on your browser:
 		```
 		 <link rel="manifest" href="manifest.json">
 		```
-	5. Include Bluemix Web push SDK to the script ,
+	5. Include IBM Cloud Web push SDK to the script ,
 		```
     	<script src="BMSPushSDK.js" async></script>
 		```
@@ -132,7 +131,7 @@ Choose any of the following options, based on your browser:
 
 ### Initialize web Push SDK
 
-Initialise the web push SDK with Bluemix Push Notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
+Initialise the web push SDK with IBM Cloud Push Notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
 
 ```
 var bmsPush = new BMSPush()
@@ -154,6 +153,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For US Dallas - `.ng.bluemix.net`
 - For UK - `.eu-gb.bluemix.net`
 - For Sydney - `.au-syd.bluemix.net`
+- For Germany -  `.eu-de.bluemix.net`
 
 
 
@@ -162,7 +162,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 
 ## Register for notifications
 
-Use the `register()` or `registerWithUserId()` API to register the device with Bluemix Push Notifications service. Choose either of the following options:
+Use the `register()` or `registerWithUserId()` API to register the device with IBM Cloud Push Notifications service. Choose either of the following options:
 
 - Register without UserId
 
@@ -278,11 +278,11 @@ To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array 
 
 ### Learning More
 
-* Visit the **[Bluemix Developers Community](https://developer.ibm.com/bluemix/)**.
+* Visit the **[IBM Cloud Developers Community](https://developer.ibm.com/bluemix/)**.
 
 * [Getting started with IBM MobileFirst Platform for iOS](https://www.ng.bluemix.net/docs/mobile/index.html)
 
-### Connect with Bluemix
+### Connect with IBM Cloud
 
 [Twitter](https://twitter.com/ibmbluemix) |
 [YouTube](https://www.youtube.com/watch?v=qusSM8KihNE) |
