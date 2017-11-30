@@ -274,7 +274,7 @@ To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array 
 
 * For samples, visit - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
 
-* For video tutorials, visit- [Bluemix Push Notifications](https://www.youtube.com/channel/UCRr2Wou-z91fD6QOYtZiHGA)
+* For video tutorials, visit- [Bluemix Push Notifications](https://www.youtube.com/playlist?list=PLTroxxTPN9dIZYn9IU-IOcQePO-u5r0r4)
 
 ### Learning More
 
