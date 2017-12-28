@@ -558,18 +558,23 @@ function BMSPush() {
             if (!_isExtension) {
               _deviceId = localStorage.getItem("deviceId");
               localStorage.setItem("token", subscription);
-
-              var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
-              var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
-              var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
-              var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
-
+             
               if (getBrowser() === SAFARI_BROWSER) {
                 _platform = "WEB_SAFARI";
                 token = subscription; // This is a string value;
-
                 printLog('The device token from safari is ' + token);
               } else {
+                
+                var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+                var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+                var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+                var authSecret = rawAuthSecret ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
+
+                if (!validateInput(subscription.endpoint) || !validateInput(key) || !validateInput(authSecret)) {
+                  printLog("Error while getting token values");
+                  callbackM(getBMSPushResponse("Error while getting token values", 500, "Error"));
+                  return;
+                }
                 var tokenValue = {
                   "endpoint": subscription.endpoint,
                   "userPublicKey": key,
@@ -886,6 +891,8 @@ function BMSPush() {
               _appRegion = ".eu-gb.bluemix.net"
             } else if (appReg.includes("au-syd")) {
               _appRegion = ".au-syd.bluemix.net"
+            } else if (appReg.includes("eu-de")) {
+              _appRegion = ".eu-de.bluemix.net"
             }
           }
 
