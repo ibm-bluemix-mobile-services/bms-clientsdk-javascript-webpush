@@ -63,11 +63,15 @@ function BMSPush() {
 
       if (getBrowser() === CHROME_EXTENSION) {
         _isExtension = true;
-        chrome.storage.local.set({
-          'deviceId': _bluemixDeviceId
-        })
+        if (validateInput(_bluemixDeviceId)) {
+          chrome.storage.local.set({
+            'deviceId': _bluemixDeviceId
+          })
+        }
       }else {
-        localStorage.setItem("deviceId", _bluemixDeviceId);
+        if (validateInput(_bluemixDeviceId)) {
+          localStorage.setItem("deviceId", _bluemixDeviceId);
+        } 
       }
 
       if (_isExtension) {
