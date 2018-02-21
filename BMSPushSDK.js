@@ -31,6 +31,7 @@ var _platform;
 var _websitePushIDSafari;
 var _getMethod;
 var _bluemixDeviceId;
+var _pushVaribales;
 
 function BMSPush() {
   /**
@@ -50,6 +51,8 @@ function BMSPush() {
     _pushClientSecret = params.clientSecret ? params.clientSecret : "";
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
     _bluemixDeviceId = params.deviceId ? params.deviceId : "";
+    _pushVaribales = params.pushVaribales ? params.pushVaribales : "";
+    debugger;
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
@@ -60,18 +63,25 @@ function BMSPush() {
         printLog("User has not provided a valid client secret");
       }
 
-
       if (getBrowser() === CHROME_EXTENSION) {
         _isExtension = true;
         if (validateInput(_bluemixDeviceId)) {
           chrome.storage.local.set({
             'deviceId': _bluemixDeviceId
-          })
+          });
+        }
+        if (validateInput(_pushVaribales)) {
+          chrome.storage.local.set({
+            'pushVaribales': _pushVaribales
+          });
         }
       }else {
         if (validateInput(_bluemixDeviceId)) {
           localStorage.setItem("deviceId", _bluemixDeviceId);
-        } 
+        }
+        if (validateInput(_pushVaribales)) {
+          localStorage.setItem("pushVaribales", _pushVaribales);
+        }  
       }
 
       if (_isExtension) {
@@ -101,6 +111,7 @@ function BMSPush() {
           isPushInitialized = false;
           callback(error);
         });
+        sendMessage(_pushVaribales);
       }
     } else {
       printLog("Please provide a valid  appGUID or/and appRegion");
@@ -447,7 +458,6 @@ function BMSPush() {
                 reject(event.data.error);
               } else {
                 resolve(event.data);
-
               }
             };
             navigator.serviceWorker.controller.postMessage(message, [messageChannel.port2]);
@@ -489,7 +499,6 @@ function BMSPush() {
                       } else {
                         printLog('failure reporting message' + res.responseText);
                       }
-                      //sendMessage({command:'Set Update Port'});
                     },statusObj, null);
                   }
                   else {
@@ -499,9 +508,6 @@ function BMSPush() {
                 });
                 navigator.serviceWorker.register(SERVICE_WORKER).then(function(reg) {
 
-
-
-                  //sendMessage({command:'Set Update Port'});
                   if (reg.installing) {
                     printLog('Service worker installing');
                   } else if (reg.waiting) {
@@ -568,7 +574,6 @@ function BMSPush() {
                 token = subscription; // This is a string value;
                 printLog('The device token from safari is ' + token);
               } else {
-                
                 var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
                 var key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
                 var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
@@ -961,9 +966,58 @@ function BMSPush() {
         var BMSPushBackground = {
           init: function() {},
           onMessageReceived: function(message) {
+            alert("Message is  : ", message);
+            debugger;
             var messageString = JSON.stringify(message, null, 4);
             BMSPushBackground.printLogExt("Notification Received:" + messageString);
-            var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
+            var msgtitle = "yoskfhskdhfsd";
+            var messageData = message.data.alert;
+            var mshIconUrl = message.data.iconUrl;
+            if (message.data.iconUrl == null) {
+              var icons = chrome.runtime.getManifest().icons;
+              mshIconUrl = icons["128"];
+              if (mshIconUrl == null) {
+                mshIconUrl = icons["48"];
+                if (mshIconUrl == null) {
+                  mshIconUrl = icons["16"];
+                }
+              }
+            } else {
+              //Download the image as BLOB and create a BLOB URL
+              var xhr = new XMLHttpRequest();
+              xhr.open("GET", message.data.iconUrl);
+              xhr.responseType = "blob";
+              xhr.onload = function(e) {
+                var urlCreator = window.URL || window.webkitURL;
+                var imageUrl = urlCreator.createObjectURL(this.response);
+              };
+              xhr.send();
+            }
+            const regex = /{{\s*([^}]+)\s*}}/g;
+            let messageTemp;
+
+            function interpolate(str) {
+              return function interpolate(o) {
+                  return str.replace(regex, function (a, b) {
+                      var r = o[b];
+                      return typeof r === 'string' || typeof r === 'number' ? r : a;
+                  });
+              }
+            }
+            function createTemplateMessage() {
+              chrome.storage.local.get('pushVaribales', function(result) {
+                _pushVaribales = result.pushVaribales;
+                if (Object.keys(_pushVaribales).length > 0 ) {
+                  messageData = interpolate(messageData)(_pushVaribales);
+                  createChromeNotification(mshIconUrl);
+                }
+              });              
+            }
+            if ((messageTemp = regex.exec(messageData)) !== null) {
+              createTemplateMessage();
+            } else {
+              createChromeNotification(mshIconUrl);
+            }
 
             function createChromeNotification(msgIconUrl) {
               var messageUrl = message.data.url ? message.data.url : ""
@@ -974,7 +1028,7 @@ function BMSPush() {
                 title: msgtitle,
                 iconUrl: msgIconUrl,
                 type: 'basic',
-                message: message.data.alert
+                message: messageData
               };
               BMSPushBackground.printLogExt(message.data.payload);
               let jsonPayload =JSON.parse(message.data.payload);
@@ -995,33 +1049,9 @@ function BMSPush() {
                 });
 
               });
-
-
             }
 
-            var mshIconUrl = message.data.iconUrl;
-            if (message.data.iconUrl == null) {
-              var icons = chrome.runtime.getManifest().icons;
-              mshIconUrl = icons["128"];
-              if (mshIconUrl == null) {
-                mshIconUrl = icons["48"];
-                if (mshIconUrl == null) {
-                  mshIconUrl = icons["16"];
-                }
-              }
-              createChromeNotification(mshIconUrl);
-            } else {
-              //Download the image as BLOB and create a BLOB URL
-              var xhr = new XMLHttpRequest();
-              xhr.open("GET", message.data.iconUrl);
-              xhr.responseType = "blob";
-              xhr.onload = function(e) {
-                var urlCreator = window.URL || window.webkitURL;
-                var imageUrl = urlCreator.createObjectURL(this.response);
-                createChromeNotification(imageUrl);
-              };
-              xhr.send();
-            }
+            
           },
 
           notificationOpened: function(notificationId) {

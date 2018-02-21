@@ -197,7 +197,25 @@ To unregister the device from receiving push notification add the following `unR
     alert(response.response)
   }
 ```
+## Template based push notification in IBM Cloud Push notifications Service
 
+  Add the variables in the Push initialize params values.
+
+  ```
+  var templateValues = {
+    "userName":"tony",
+    "userId":"ttone123"
+  }
+
+  var initParams = {
+    "appGUID":"push app GUID",
+    "appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret",
+    "pushVaribales":templateValues
+  }
+
+  bmsPush.initialize(initParams, callback)
+  ```
 ### Samples & videos
 
 * Please visit for samples - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
