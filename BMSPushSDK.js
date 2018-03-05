@@ -52,7 +52,6 @@ function BMSPush() {
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
     _bluemixDeviceId = params.deviceId ? params.deviceId : "";
     _pushVaribales = params.pushVaribales ? params.pushVaribales : "";
-    debugger;
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
@@ -966,11 +965,9 @@ function BMSPush() {
         var BMSPushBackground = {
           init: function() {},
           onMessageReceived: function(message) {
-            alert("Message is  : ", message);
-            debugger;
             var messageString = JSON.stringify(message, null, 4);
             BMSPushBackground.printLogExt("Notification Received:" + messageString);
-            var msgtitle = "yoskfhskdhfsd";
+            var msgtitle = message.data.title ? message.data.title : chrome.runtime.getManifest().name;
             var messageData = message.data.alert;
             var mshIconUrl = message.data.iconUrl;
             if (message.data.iconUrl == null) {

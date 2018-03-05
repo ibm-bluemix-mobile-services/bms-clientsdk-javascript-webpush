@@ -45,13 +45,13 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 4. Include the `manifest.json` in `<head>` tag of your html file .
 
 	```
-	    <link rel="manifest" href="manifest.json">
+	  <link rel="manifest" href="manifest.json">
 	```
 5. Include IBM Cloud Web push SDK to the web application from github.
 
-```
-<script src="BMSPushSDK.js" async></script>
-```
+    ```
+    <script src="BMSPushSDK.js" async></script>
+    ```
 
 #### Chrome App and Extensions.
 
