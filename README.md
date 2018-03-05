@@ -49,9 +49,9 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 	```
 5. Include IBM Cloud Web push SDK to the web application from github.
 
-	```
-     <script src="BMSPushSDK.js" async></script>
-  ```
+```
+<script src="BMSPushSDK.js" async></script>
+```
 
 #### Chrome App and Extensions.
 
