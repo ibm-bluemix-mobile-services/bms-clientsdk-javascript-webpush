@@ -196,7 +196,7 @@ To unregister the device from receiving push notification add the following `unR
     alert(response.response)
   }
 ```
-## Template based push notification in IBM Cloud Push notifications Service
+## Parameterize Push Notifications
 
   Add the variables in the Push initialize params values.
 
