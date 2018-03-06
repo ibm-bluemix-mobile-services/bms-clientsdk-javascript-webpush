@@ -11,6 +11,28 @@
     limitations under the License.
 */
 //import "bmsutils";
+
+const regex = /{{\s*([^}]+)\s*}}/g;
+var _pushVaribales = "";
+
+function interpolate(messageData) {
+    return function interpolate(o) {
+        return messageData.replace(regex, function (a, b) {
+            var r = o[b];
+            return typeof r === 'string' || typeof r === 'number' ? r : a;
+        });
+    }
+}
+
+function createTemplateMessage(messageData) {
+    if (Object.keys(_pushVaribales).length > 0 ) {
+        var message = interpolate(messageData)(_pushVaribales);
+        return message;
+    } else {
+        return messageData;
+    }
+}
+
 function displayNotification(event) {
     var messageJson = event.data.json();
     var title = messageJson.title ? messageJson.title : "New message";
@@ -19,22 +41,26 @@ function displayNotification(event) {
     var tag = tagJson.tag ? tagJson.tag : "";
     var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
     var payloadData = messageJson.payload ? messageJson.payload : "Example message"
+    let messageTemp;
+    if ((messageTemp = regex.exec(bodyAlert)) !== null) {
+        bodyAlert = createTemplateMessage(bodyAlert);
+    }
     self.registration.showNotification(title, {
         body: bodyAlert,
         icon: imageUrl,
         data: payloadData,
         tag: tag
-    });
+    });  
     return Promise.resolve();
 }
 
 
 function triggerSeenEvent(strMsg) {
-    send_message_to_all_clients("msgEventSeen:" +strMsg);
+    send_message_to_all_clients("msgEventSeen:" + strMsg);
 }
 
 function triggerOpenEvent(strMsg) {
-    send_message_to_all_clients("msgEventOpen:" +strMsg);
+    send_message_to_all_clients("msgEventOpen:" + strMsg);
 }
 
 function onPushNotificationReceived(event) {
@@ -47,14 +73,14 @@ function onPushNotificationReceived(event) {
 
 self.addEventListener('push', onPushNotificationReceived);
 
-function send_message_to_client(client, msg){
-    return new Promise(function(resolve, reject){
+function send_message_to_client(client, msg) {
+    return new Promise(function (resolve, reject) {
         var msg_chan = new MessageChannel();
 
-        msg_chan.port1.onmessage = function(event){
-            if(event.data.error){
+        msg_chan.port1.onmessage = function (event) {
+            if (event.data.error) {
                 reject(event.data.error);
-            }else{
+            } else {
                 resolve(event.data);
             }
         };
@@ -63,7 +89,7 @@ function send_message_to_client(client, msg){
     });
 }
 
-function send_message_to_all_clients(msg){
+function send_message_to_all_clients(msg) {
     clients.matchAll().then(clients => {
         clients.forEach(client => {
             send_message_to_client(client, msg);
@@ -71,31 +97,30 @@ function send_message_to_all_clients(msg){
     });
 }
 
-var i = 0;
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function (event) {
     self.skipWaiting();
     console.log('Installed Service Worker : ', event);
     //event.postMessage("SW Says 'Hello back!'");
 });
 
-self.addEventListener('message', function(event) {
-    console.log("The message is " + event.data + " port is " + event.ports[0]);
+self.addEventListener('message', function (event) {
     replyPort = event.ports[0];
+    _pushVaribales = event.data;
 });
 
-self.addEventListener('activate', function(event) {
+self.addEventListener('activate', function (event) {
     console.log('Activated Service Worker : ', event);
     event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
     console.log('Notification clicked with tag' + event.notification.tag + " and data " + event.notification.data);
     let nidjson = event.notification.data;
     event.notification.close();
     event.waitUntil(triggerOpenEvent(nidjson));
 });
 
-self.addEventListener('pushsubscriptionchange', function() {
-	console.log('Push Subscription change');
-	send_message_to_all_clients("updateRegistration:");
+self.addEventListener('pushsubscriptionchange', function () {
+    console.log('Push Subscription change');
+    send_message_to_all_clients("updateRegistration:");
 });
