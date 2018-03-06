@@ -45,14 +45,13 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 4. Include the `manifest.json` in `<head>` tag of your html file .
 
 	```
-	<link rel="manifest" href="manifest.json">
+	  <link rel="manifest" href="manifest.json">
 	```
 5. Include IBM Cloud Web push SDK to the web application from github.
 
-	```
-  <script src="BMSPushSDK.js" async></script>
-
-	```
+    ```
+    <script src="BMSPushSDK.js" async></script>
+    ```
 
 #### Chrome App and Extensions.
 
@@ -197,7 +196,38 @@ To unregister the device from receiving push notification add the following `unR
     alert(response.response)
   }
 ```
+## Template based push notification in IBM Cloud Push notifications Service
 
+  Add the variables in the Push initialize params values.
+
+  ```
+  var templateValues = {
+    "userName":"testname",
+    "accountNumber":"3564758697057869"
+  }
+
+  var initParams = {
+    "appGUID":"push app GUID",
+    "appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret",
+    "pushVaribales":templateValues
+  }
+
+  bmsPush.initialize(initParams, callback)
+  ```
+While registering the device IBM Cloud Push Notifications Web SDK will pass these variables to IBM Cloud Push Notifications service. 
+
+While sending push notification add the varibale key in `{{}}`
+
+  ```Swift
+
+    {
+        "message": {
+            "alert": "hello {{username}} , balance on your account {{accountNumber}} is $1200"
+        }
+    }
+
+  ```
 ### Samples & videos
 
 * Please visit for samples - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
