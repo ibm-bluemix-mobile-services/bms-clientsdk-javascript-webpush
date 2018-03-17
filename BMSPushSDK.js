@@ -110,7 +110,9 @@ function BMSPush() {
           isPushInitialized = false;
           callback(error);
         });
-        sendMessage(_pushVaribales);
+        if (getBrowser() != SAFARI_BROWSER) {
+          sendMessage(_pushVaribales);
+        }
       }
     } else {
       printLog("Please provide a valid  appGUID or/and appRegion");
