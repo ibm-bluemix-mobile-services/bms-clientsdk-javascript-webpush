@@ -32,8 +32,17 @@ var _websitePushIDSafari;
 var _getMethod;
 var _bluemixDeviceId;
 var _pushVaribales;
+var _pushBaseUrl;
 
 function BMSPush() {
+
+  this.REGION_US_SOUTH = ".ng.bluemix.net";
+  this.REGION_UK = ".eu-gb.bluemix.net";
+  this.REGION_SYDNEY = ".au-syd.bluemix.net";
+  this.REGION_GERMANY = ".eu-de.bluemix.net";
+  this.REGION_US_EAST = ".us-east.bluemix.net";
+  this.REGION_TOKYO = ".jp-tok.bluemix.net";
+
   /**
   * Initialize the BMS Push SDK
   *
@@ -55,6 +64,7 @@ function BMSPush() {
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
+      getBaseUrl(_appRegion);
 
       if (validateInput(_pushClientSecret)) {
         printLog("User has provided a valid client secret");
@@ -93,7 +103,7 @@ function BMSPush() {
           callback(getBMSPushResponse("Successfully initialized Push", 200, ""));
         });
         chrome.storage.local.set({
-          '_push_url': 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId,
+          '_push_url': _pushBaseUrl + '/imfpush/v1/apps/' + _appId,
           '_pushClientSecret': _pushClientSecret
         });
 
@@ -329,7 +339,7 @@ function BMSPush() {
           let resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
           if (resultSafariPermission.permission === "default") {
             //User never asked before for permission
-            let base_url = "https://imfpush" + _appRegion + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+            let base_url = _pushBaseUrl + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
             printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari);
             window.safari.pushNotification.requestPermission(base_url,
               _websitePushIDSafari, {
@@ -872,7 +882,7 @@ function BMSPush() {
 
           function callPushRest(method, callback, action, data, headers) {
 
-            var url = 'https://imfpush' + _appRegion + '/imfpush/v1/apps/' + _appId;
+            var url = _pushBaseUrl + '/imfpush/v1/apps/' + _appId;
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = function() {
               if (xmlHttp.readyState == 4) {
@@ -885,6 +895,14 @@ function BMSPush() {
               xmlHttp.setRequestHeader('clientSecret', _pushClientSecret);
             }
             xmlHttp.send(JSON.stringify(data));
+          }
+
+          function getBaseUrl(appReg) {
+            if (appReg === this.REGION_TOKYO) {
+              _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com'
+            } else {
+              _pushBaseUrl = 'https://imfpush' + _appRegion
+            }
           }
 
           function setRewriteDomain(appReg) {
