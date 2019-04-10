@@ -898,7 +898,7 @@ function BMSPush() {
           }
 
           function getBaseUrl(appReg) {
-            if (appReg === this.REGION_TOKYO) {
+            if (appReg === '.jp-tok.bluemix.net') {
               _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com'
             } else {
               _pushBaseUrl = 'https://imfpush' + _appRegion

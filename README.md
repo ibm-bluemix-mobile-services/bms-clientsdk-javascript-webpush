@@ -89,12 +89,12 @@ To get your app GUID, select the Configuration option in the navigation pane of 
 
 The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
-- For US Dallas - `BMSPush.REGION_US_SOUTH`
-- For US East - `BMSPush.REGION_US_EAST`
-- For UK - `BMSPush.REGION_UK`
-- For Sydney - `BMSPush.REGION_SYDNEY`
-- For Germany - `BMSPush.REGION_GERMANY`
-- For Tokyo - `BMSPush.REGION_TOKYO`
+- For US Dallas - `bmsPush.REGION_US_SOUTH`
+- For US East - `bmsPush.REGION_US_EAST`
+- For UK - `bmsPush.REGION_UK`
+- For Sydney - `bmsPush.REGION_SYDNEY`
+- For Germany - `bmsPush.REGION_GERMANY`
+- For Tokyo - `bmsPush.REGION_TOKYO`
 
 ```
     var bmsPush = new BMSPush()
