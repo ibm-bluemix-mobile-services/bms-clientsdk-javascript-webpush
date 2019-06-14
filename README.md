@@ -106,10 +106,12 @@ The `App Region` specifies the location where the Push service is hosted. You ca
         "appRegion":"Region where service hosted",
         "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
 	      "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-        "deviceId":"Optional deviceId for device registration"
+        "deviceId":"Optional deviceId for device registration",
+        "applicationServerKey": "applicationServerKey for the chrome browser"
     }
     bmsPush.initialize(params, callback)
 ```
+>**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `imfpush/v1/apps/jejtest/webpushServerKey`.
 
 ## Registering Web application.
 
