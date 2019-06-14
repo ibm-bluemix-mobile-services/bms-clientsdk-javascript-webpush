@@ -33,6 +33,7 @@ var _getMethod;
 var _bluemixDeviceId;
 var _pushVaribales;
 var _pushBaseUrl;
+var _pushVapID;
 
 function BMSPush() {
 
@@ -61,6 +62,7 @@ function BMSPush() {
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
     _bluemixDeviceId = params.deviceId ? params.deviceId : "";
     _pushVaribales = params.pushVaribales ? params.pushVaribales : "";
+    _pushVapID = params.applicationServerKey ? params.applicationServerKey : "";
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
       setRewriteDomain(_appRegion);
@@ -367,15 +369,19 @@ function BMSPush() {
               registerUsingToken(resultSafariPermission.deviceToken, callbackM);
             }
           } else {
+
+            var subscribeOptions = { userVisibleOnly: true};
+            if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
+              const convertedVapidKey = urlBase64ToUint8Array(_pushVapID);
+              subscribeOptions.applicationServerKey = convertedVapidKey
+            }
             navigator.serviceWorker.ready.then(function(reg) {
               reg.pushManager.getSubscription().then(
                 function(subscription) {
                   if (subscription) {
                     registerUsingToken(subscription, callbackM);
                   } else {
-                    reg.pushManager.subscribe({
-                      userVisibleOnly: true
-                    }).then(function(subscription) {
+                    reg.pushManager.subscribe(subscribeOptions).then(function(subscription) {
                       registerUsingToken(subscription, callbackM);
                     }).catch(function(error) {
                       if (Notification.permission === 'denied') {
@@ -430,6 +436,21 @@ function BMSPush() {
               }
             }, null);
           }
+        }
+
+        function urlBase64ToUint8Array(base64String) {
+          const padding = '='.repeat((4 - base64String.length % 4) % 4);
+          const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+        
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
         }
 
         function update() {
@@ -707,10 +728,15 @@ function BMSPush() {
 
           /* Register Device with/ without userId*/
 
-          function registerDevice(device, callbackM) {
+          function registerDevice(deviceJSON, callbackM) {
 
+            var device = deviceJSON
+            if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
+              device.vapid = true
+            }
             printLog("registerDevice: Checking the previous registration :", device);
             _userId = device.userId;
+
             getDevice(device.deviceId, get).then(existingDevice => {
               if (existingDevice.token != device.token || existingDevice.deviceId != device.deviceId || (device.hasOwnProperty('userId') && (existingDevice.userId != device.userId))) {
                 updateDevice(device, put).then((updatedDevice) => {
