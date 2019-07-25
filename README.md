@@ -28,7 +28,8 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 			"gcm_sender_id": "GCM_Sender_Id"
 		}
 		```
-
+    >**Note**:  `gcm_sender_id` is not required if you are using the `applicationServerKey` in BMS push init method.
+    
 	For Firefox browser add the following values in `manifest_Website.json` file.
 
 	* Change `name` to your Website's name.
@@ -111,7 +112,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
     }
     bmsPush.initialize(params, callback)
 ```
->**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `imfpush/v1/apps/jejtest/webpushServerKey`.
+>**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `imfpush/v1/apps/jejtest/webpushServerKey`. If you are using this key, remove the `gcm_sender_id` from the `manifest.json` file 
 
 ## Registering Web application.
 
