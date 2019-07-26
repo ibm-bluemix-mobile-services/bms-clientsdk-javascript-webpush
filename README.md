@@ -28,7 +28,8 @@ For installing the Javascript SDK in Chrome and Firefox Websites application fol
 			"gcm_sender_id": "GCM_Sender_Id"
 		}
 		```
-
+    >**Note**:  `gcm_sender_id` is not required if you are using the `applicationServerKey` in BMS push init method.
+    
 	For Firefox browser add the following values in `manifest_Website.json` file.
 
 	* Change `name` to your Website's name.
@@ -89,11 +90,12 @@ To get your app GUID, select the Configuration option in the navigation pane of 
 
 The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
-- For US Dallas - `.ng.bluemix.net`
-- For US East - `.us-east.bluemix.net`
-- For UK - `.eu-gb.bluemix.net`
-- For Sydney - `.au-syd.bluemix.net`
-- For Germany - `.eu-de.bluemix.net`
+- For US Dallas - `bmsPush.REGION_US_SOUTH`
+- For US East - `bmsPush.REGION_US_EAST`
+- For UK - `bmsPush.REGION_UK`
+- For Sydney - `bmsPush.REGION_SYDNEY`
+- For Germany - `bmsPush.REGION_GERMANY`
+- For Tokyo - `bmsPush.REGION_TOKYO`
 
 ```
     var bmsPush = new BMSPush()
@@ -105,10 +107,12 @@ The `App Region` specifies the location where the Push service is hosted. You ca
         "appRegion":"Region where service hosted",
         "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
 	      "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-        "deviceId":"Optional deviceId for device registration"
+        "deviceId":"Optional deviceId for device registration",
+        "applicationServerKey": "applicationServerKey for the chrome browser"
     }
     bmsPush.initialize(params, callback)
 ```
+>**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `/apps/{applicationId}/settings/webpushServerKey`. If you are using this key, remove the `gcm_sender_id` from the `manifest.json` file 
 
 ## Registering Web application.
 
