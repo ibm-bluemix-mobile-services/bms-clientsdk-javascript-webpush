@@ -112,7 +112,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
     }
     bmsPush.initialize(params, callback)
 ```
->**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `imfpush/v1/apps/jejtest/webpushServerKey`. If you are using this key, remove the `gcm_sender_id` from the `manifest.json` file 
+>**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `/apps/{applicationId}/settings/webpushServerKey`. If you are using this key, remove the `gcm_sender_id` from the `manifest.json` file 
 
 ## Registering Web application.
 
