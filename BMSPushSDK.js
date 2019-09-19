@@ -731,7 +731,7 @@ function BMSPush() {
 
             var device = deviceJSON
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
-              device.vapid = true
+              device.vapidRegistration = true
             }
             printLog("registerDevice: Checking the previous registration :", device);
             _userId = device.userId;
