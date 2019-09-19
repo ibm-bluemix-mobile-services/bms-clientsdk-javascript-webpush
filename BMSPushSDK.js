@@ -42,7 +42,6 @@ function BMSPush() {
   this.REGION_SYDNEY = ".au-syd.bluemix.net";
   this.REGION_GERMANY = ".eu-de.bluemix.net";
   this.REGION_US_EAST = ".us-east.bluemix.net";
-  this.REGION_TOKYO = ".jp-tok.bluemix.net";
 
   /**
   * Initialize the BMS Push SDK
@@ -732,7 +731,7 @@ function BMSPush() {
 
             var device = deviceJSON
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
-              device.vapid = true
+              device.vapidRegistration = true
             }
             printLog("registerDevice: Checking the previous registration :", device);
             _userId = device.userId;
@@ -924,11 +923,7 @@ function BMSPush() {
           }
 
           function getBaseUrl(appReg) {
-            if (appReg === '.jp-tok.bluemix.net') {
-              _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com'
-            } else {
-              _pushBaseUrl = 'https://imfpush' + _appRegion
-            }
+            _pushBaseUrl = 'https://imfpush' + _appRegion;
           }
 
           function setRewriteDomain(appReg) {
