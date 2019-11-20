@@ -42,6 +42,7 @@ function BMSPush() {
   this.REGION_SYDNEY = ".au-syd.bluemix.net";
   this.REGION_GERMANY = ".eu-de.bluemix.net";
   this.REGION_US_EAST = ".us-east.bluemix.net";
+  this.REGION_JP_TOK = ".jp-tok.bluemix.net";
 
   /**
   * Initialize the BMS Push SDK
@@ -923,7 +924,11 @@ function BMSPush() {
           }
 
           function getBaseUrl(appReg) {
-            _pushBaseUrl = 'https://imfpush' + _appRegion;
+            if (_appRegion == this.REGION_JP_TOK) {
+              _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com';
+            } else {
+              _pushBaseUrl = 'https://imfpush' + _appRegion;
+            }
           }
 
           function setRewriteDomain(appReg) {

@@ -95,7 +95,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For UK - `bmsPush.REGION_UK`
 - For Sydney - `bmsPush.REGION_SYDNEY`
 - For Germany - `bmsPush.REGION_GERMANY`
-- For Tokyo - `bmsPush.REGION_TOKYO`
+- For Tokyo - `bmsPush.REGION_JP_TOK`
 
 ```
     var bmsPush = new BMSPush()
