@@ -56,7 +56,7 @@ Choose any of the following options, based on your browser:
 	2. Edit the `manifest_Website.json` file.
 
 		- For Chrome browser:
-			```			
+			```JSON		
 			{
 				"name": "YOUR_WEBSITE_NAME",
 				"gcm_sender_id": "GCM_Sender_Id"
@@ -67,7 +67,7 @@ Choose any of the following options, based on your browser:
 			>**Note**: `gcm_sender_id` is not required if you are using the applicationServerKey in BMS push init method.
 
 		- For Firefox browser, add the following values in `manifest_Website.json` file.
-			```
+			```JSON
 			{
       		"name": "YOUR_WEBSITE_NAME"
 			}
@@ -79,11 +79,11 @@ Choose any of the following options, based on your browser:
 	3. Change the `manifest_Website.json` file name to `manifest.json`.        
 
 	4. Include the `manifest.json` in `<head>` tag of your html file .
-		```
+		```HTML
 		 <link rel="manifest" href="manifest.json">
 		```
 	5. Include IBM Cloud Web push SDK to the script ,
-		```
+		```HTML
     	<script src="BMSPushSDK.js" async></script>
 		```
 
@@ -91,7 +91,7 @@ Choose any of the following options, based on your browser:
 - Safari web browsers
 
 	For Safari web browsers, add the `BMSPushSDK.js` in the `html` file:
-	  ```
+	  ```HTML
 	   	<script src="BMSPushSDK.js" async></script>
 	  ```
 
@@ -109,7 +109,7 @@ Choose any of the following options, based on your browser:
 
 
 	3. In your `Javascript` file (background.js), add the following to receive push notifications:
-	   ```
+	   ```JS
 	   chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
 		chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
 	   ```
@@ -123,7 +123,7 @@ Choose any of the following options, based on your browser:
     	* Add the `BMSPushSDK.js` in the `background.scripts`.
     	* Change the `manifest_Chrome_Ext.json` to `manifest.json`.
 	2. In your `Javascript` file, add the following to receive notifications:
-	 ```
+	 ```JS
 	chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
 	chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
 	chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
@@ -133,19 +133,19 @@ Choose any of the following options, based on your browser:
 
 Initialise the web push SDK with IBM Cloud Push Notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
 
-```
+```JS
 var bmsPush = new BMSPush()
 function callback(response) {
-alert(response.response)
-    }
-    var initParams = {
-        "appGUID":"push app GUID",
-        "appRegion":"Region where service hosted",
-        "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
-	      "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-        "deviceId":"Optional deviceId for device registration"
-    }
-    bmsPush.initialize(params, callback)
+	alert(response.response)
+}
+var initParams = {
+    "appGUID":"push app GUID",
+    "appRegion":"Region where service hosted",
+    "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
+	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
+    "deviceId":"Optional deviceId for device registration"
+}
+bmsPush.initialize(params, callback)
 ```
 
 The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
@@ -157,10 +157,7 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For US East - `.us-east.bluemix.net`
 - For Tokyo - `.jp-tok.bluemix.net`
 
-
-
 >**Note**:For debugging, use `bmsPush.isDebugEnable(true)`.
-
 
 ## Register for notifications
 
@@ -169,7 +166,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 - Register without UserId
 
 	To register without userId use the following pattern
-	```
+	```JS
 	var bmsPush = new BMSPush()
 	function callback(response) {
 	alert(response.response)
@@ -177,7 +174,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 	var initParams = {
 		"appGUID":"push app GUID",
 		"appRegion":"Region where service hosted",
-    "clientSecret":"push app client secret"
+   		"clientSecret":"push app client secret"
 	}
 	bmsPush.initialize(initParams, callback)
 	bmsPush.register(function(response) {
@@ -188,7 +185,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 - Register with UserId
 
 	For `UserId` based registration, use the following code snippet,
-	```	
+	```JS
 	var bmsPush = new BMSPush()
 	function callback(response) {
     alert(response.response)
@@ -212,9 +209,9 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 ### Unregistering from notifications
 
 - To unregister from receiving notifications, add the following `unRegisterDevice()` method:
-	```
+	```JS
 	bmsPush.unRegisterDevice(function(response) {
-	alert(response.response)
+		alert(response.response)
 	}
 	```
 
@@ -227,7 +224,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 
 To retrieve all the available tags, use the `retrieveAvailableTags()` method.
 
-```
+```JS
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
    var jsonResponse = JSON.parse(response.response)
    var tagsArray = []
@@ -244,10 +241,10 @@ The `subscribe()` API will subscribe the web application for a list of given tag
 
 Use the following code snippet in your application to subscribe a list of tags.
 
-```
- bmsPush.subscribe(tagsArray,function(response) {
+```JS
+bmsPush.subscribe(tagsArray,function(response) {
   alert(response.response)
-  })
+})
 ```
 
 ### Retrieve subscribed tags
@@ -256,26 +253,26 @@ The `retrieveSubscriptions` API will return the list of tags to which a website 
 
 Use the following code snippet in your application to get a subscription list.
 
-```
+```JS
 bmsPush.retrieveSubscriptions(function(response){
    alert(response.response);
- })
+})
 ```
 
 ### Unsubscribing from tags
 
 To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array of tag names as parameter.
 
-```
- bmsPush.unSubscribe(tagsArray,function(response) {
-    alert(response.response)
-  }
+```JS
+bmsPush.unSubscribe(tagsArray,function(response) {
+	alert(response.response)
+}
 ```
 ## Parameterize Push Notifications
 
   Add the variables in the Push initialize params values.
 
-  ```
+  ```JS
   var templateValues = {
     "userName":"testname",
     "accountNumber":"3564758697057869"
@@ -294,7 +291,7 @@ While registering the device IBM Cloud Push Notifications Web SDK will pass thes
 
 While sending push notification add the varibale key in `{{}}`
 
-  ```Swift
+  ```JSON
 
     {
         "message": {
