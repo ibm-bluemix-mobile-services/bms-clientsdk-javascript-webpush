@@ -169,7 +169,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 	```JS
 	var bmsPush = new BMSPush()
 	function callback(response) {
-	alert(response.response)
+		alert(response.response)
 	}
 	var initParams = {
 		"appGUID":"push app GUID",
@@ -188,7 +188,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 	```JS
 	var bmsPush = new BMSPush()
 	function callback(response) {
-    alert(response.response)
+    	alert(response.response)
 	}	
 	var initParams = {
     	"appGUID":"push app GUID",
