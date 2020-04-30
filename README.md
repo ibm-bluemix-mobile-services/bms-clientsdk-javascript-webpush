@@ -1,131 +1,178 @@
-# IBM Cloud Mobile Services - Web Push SDK 
+IBM Cloud Push Notifications Web SDK
+===================================================
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
-[![](https://img.shields.io/badge/bluemix-powered-blue.svg)](https://bluemix.net)
 
-Enable Safari, Chrome & Firefox web browser applications to receive IBM Cloud Push notifications and, send IBM Cloud Push
-notifications to these Chrome & Firefox web browser applications. This section describes how to install and use the client
-JavaScript Push SDK to further develop your Web applications.
+The [IBM Cloud Push Notifications service](https://cloud.ibm.com/catalog/services/push-notifications) provides a unified push service to send real-time notifications to mobile and web applications. The SDK enables Safari, Chrome,  Firefox browsers and Chrome Apps & Extensions to receive push notifications sent from the service. 
 
-### Initialize SDK
+Ensure that you go through [IBM Cloud Push Notifications service documentation](https://cloud.ibm.com/docs/services/mobilepush?topic=mobile-pushnotification-gettingstartedtemplate#gettingstartedtemplate) before you start.
 
-#### Chrome & Firefox Websites
+## Contents
 
-For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Initialize SDK](#initialize-sdk)
+	- [Initialize client Push SDK](#initialize-client-push-sdk)
+	- [Initialize web Push SDK](#initialize-web-push-sdk)
+- [Register for notifications](#register-for-notifications)
+	- [Unregistering from notifications](#unregistering-from-notifications)
+- [Push Notifications service tags](#push-notifications-service-tags)
+    - [Retrieve available tags](#retrieve-available-tags)
+    - [Subscribe to tags](#subscribe-to-tags)
+    - [Retrieve subscribed tags](#retrieve-subscribed-tags)
+    - [Unsubscribing from tags](#unsubscribing-from-tags)
+- [Parameterize Push Notifications](#parameterize-push-notifications)
+- [Samples and videos](#samples-and-videos)
 
-[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest_Website.json`.
 
-1. Edit the `manifest_Website.json` file
+## Prerequisites
 
-	For Chrome browser do the following,
+* Firefox 49.0 or later
+* Chrome 54.0 or later
+* Safari 9.1 or later
 
-	* Change `name` to your Website's name
-	* Change `gcm_sender_id` to your Google Cloud Messaging (GCM) sender_ID ([How to get it ? Click here](https://console.ng.net/docs/services/mobilepush/t_push_provider_android.html)). The gcm_sender_id value contains only numbers.
+## Installation
 
+Download the [Push Notifications Web Client SDK package](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master).
+
+## Initialize SDK
+
+Complete the following steps to initialize the SDK.
+
+### Initialize client Push SDK
+
+Complete the following steps:
+
+Ensure that you go through [service configuration](https://cloud.ibm.com/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. 
+
+Choose any of the following options, based on your browser:
+
+- Chrome and Firefox web browsers
+
+	Ensure that you go through [service configuration](https://cloud.ibm.com/docs/services/mobilepush/push_step_1.html#configure-credential-for-browsers) before starting the client configuration. To install the Javascript SDK in Chrome and Firefox, complete the following steps:
+
+	1. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest_Website.json` files to your project root folder.
+
+	2. Edit the `manifest_Website.json` file.
+
+		- For Chrome browser:
+			```			
+			{
+				"name": "YOUR_WEBSITE_NAME",
+				"gcm_sender_id": "GCM_Sender_Id"
+			}
+			```
+
+			Change the `name` to your website's name and update the  `gcm_sender_id` to your Firebase Cloud Messaging (FCM) [sender ID] (https://cloud.ibm.com/docs/services/mobilepush/push_step_1.html#push_step_1_android). Note that the `gcm_sender_id` value contains only numbers.
+			>**Note**: `gcm_sender_id` is not required if you are using the applicationServerKey in BMS push init method.
+
+		- For Firefox browser, add the following values in `manifest_Website.json` file.
+			```
+			{
+      		"name": "YOUR_WEBSITE_NAME"
+			}
+      		```
+
+			Change `name` to your website's name.
+
+      
+	3. Change the `manifest_Website.json` file name to `manifest.json`.        
+
+	4. Include the `manifest.json` in `<head>` tag of your html file .
 		```
-		{
-			"name": "YOUR_WEBSITE_NAME",
-			"gcm_sender_id": "GCM_Sender_Id"
-		}
+		 <link rel="manifest" href="manifest.json">
 		```
-    >**Note**:  `gcm_sender_id` is not required if you are using the `applicationServerKey` in BMS push init method.
-    
-	For Firefox browser add the following values in `manifest_Website.json` file.
+	5. Include IBM Cloud Web push SDK to the script ,
+		```
+    	<script src="BMSPushSDK.js" async></script>
+		```
 
-	* Change `name` to your Website's name.
 
-        ```
-        {
-        	"name": "YOUR_WEBSITE_NAME"
-        }
-        ```
-2. Change the `manifest_Website.json` file name to `manifest.json`.        
+- Safari web browsers
 
-3. Add the `BMSPushSDK.js`,`BMSPushServiceWorker.js` and `manifest.json` to your root directory.
+	For Safari web browsers, add the `BMSPushSDK.js` in the `html` file:
+	  ```
+	   	<script src="BMSPushSDK.js" async></script>
+	  ```
 
-4. Include the `manifest.json` in `<head>` tag of your html file .
 
-	```
-	  <link rel="manifest" href="manifest.json">
-	```
-5. Include IBM Cloud Web push SDK to the web application from github.
+- Chrome Apps
 
-    ```
-    <script src="BMSPushSDK.js" async></script>
-    ```
+	For installing the Javascript SDK in Chrome Apps, complete the following steps:
 
-#### Chrome App and Extensions.
+	1. Add the `BMSPushSDK.js` and  `manifest_Chrome_App.json` .
+	2. Configure the manifest file:
 
-For installing the Javascript SDK in Chrome and Firefox Websites application follow the steps.
+    	1. For `Chrome App` in the `manifest_Chrome_App.json` file provide `name`, `description` , and `icons`.
+    	2. Add the `BMSPushSDK.js` in the `app.background.scripts`.
+    	3. Change the `manifest_Chrome_App.json` to `manifest.json`.
 
-[Download](https://codeload.github.com/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush/zip/master) the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` (For chrome Extensions) or `manifest_Chrome_App.json` (for Chrome Apps).
 
-1. Configure manifest file,
+	3. In your `Javascript` file (background.js), add the following to receive push notifications:
+	   ```
+	   chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
+		chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
+	   ```
 
-    * For `Chrome App` in the `manifest_Chrome_App.json` file provide `name`, `description` , and `icons`.
-    * Add the `BMSPushSDK.js` in the `app.background.scripts`.
-    * Change the `manifest_Chrome_App.json` to `manifest.json`.
+- Chrome Extensions
+	
+	Add the `BMSPushSDK.js` and `manifest_Chrome_Ext.json` .
 
-    ----------------------------------------------------------------------------------------------------
-
-    * For `Chrome Extensions` in the `manifest_Chrome_Ext.json` file provide `name`, `description` , and `icons`.
-    * Add the `BMSPushSDK.js` in the `background.scripts`.
-    * Change the `manifest_Chrome_Ext.json` to `manifest.json`.
-
-2. In your `Javascript` file add the following to receive push notifications
-
-   ```
-   chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
-   chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
-   chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
+	1. Configure the manifest file:
+	    * For `Chrome Extensions` in the `manifest_Chrome_Ext.json` file, provide `name`, `description` , and `icons`.
+    	* Add the `BMSPushSDK.js` in the `background.scripts`.
+    	* Change the `manifest_Chrome_Ext.json` to `manifest.json`.
+	2. In your `Javascript` file, add the following to receive notifications:
+	 ```
+	chrome.gcm.onMessage.addListener(BMSPushBackground.onMessageReceived)
+	chrome.notifications.onClicked.addListener(BMSPushBackground.notification_onClicked);
+	chrome.notifications.onButtonClicked.addListener(BMSPushBackground.notifiation_buttonClicked);
    ```
 
->**Note**: For <strong>Chrome App</strong> add the above ocde in <strong>background.js</strong>
+### Initialize web Push SDK
 
-## Initializing the Web Push SDK (Safari, Chrome, FireFox, Chrome Apps & Chrome Extensions)
-
-Initialse the push SDK with IBM Cloud push notifications service `app GUID` and `app Region`.  
-
-To get your app GUID, select the Configuration option in the navigation pane of your push services and click **Mobile Options**.Modify the code snippet to use your IBM Cloud push notifications service appGUID parameter.
-
-The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
-
-- For US Dallas - `bmsPush.REGION_US_SOUTH`
-- For US East - `bmsPush.REGION_US_EAST`
-- For UK - `bmsPush.REGION_UK`
-- For Sydney - `bmsPush.REGION_SYDNEY`
-- For Germany - `bmsPush.REGION_GERMANY`
-- For Tokyo - `bmsPush.REGION_JP_TOK`
+Initialise the web push SDK with IBM Cloud Push Notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
 
 ```
-    var bmsPush = new BMSPush()
-    function callback(response) {
-        alert(response.response)
+var bmsPush = new BMSPush()
+function callback(response) {
+alert(response.response)
     }
     var initParams = {
         "appGUID":"push app GUID",
         "appRegion":"Region where service hosted",
         "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
 	      "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-        "deviceId":"Optional deviceId for device registration",
-        "applicationServerKey": "applicationServerKey for the chrome browser"
+        "deviceId":"Optional deviceId for device registration"
     }
     bmsPush.initialize(params, callback)
 ```
->**Note**: Get the `applicationServerKey` from the push service dashboard or from the URL - `/apps/{applicationId}/settings/webpushServerKey`. If you are using this key, remove the `gcm_sender_id` from the `manifest.json` file 
 
-## Registering Web application.
+The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
-Use the `register()` API to register the device with IBM Cloud Push Notifications service. For registering from Chrome , add the Google Cloud Messaging (GCM) API Key and Web Site URL  in the IBM Cloud Push Notifications service web configuration dashboard under Chrome setup .
+- For US Dallas - `.ng.bluemix.net`
+- For UK - `.eu-gb.bluemix.net`
+- For Sydney - `.au-syd.bluemix.net`
+- For Germany -  `.eu-de.bluemix.net`
+- For US East - `.us-east.bluemix.net`
+- For Tokyo - `.jp-tok.bluemix.net`
 
-For registering from Firefox , add Web Site URL in the IBM Cloud Push Notifications service web configuration dashboard under Firefox setup.
 
-Use the following code snippet to register in IBM Cloud push notifications service.
 
-```
+>**Note**:For debugging, use `bmsPush.isDebugEnable(true)`.
+
+
+## Register for notifications
+
+Use the `register()` or `registerWithUserId()` API to register the device with IBM Cloud Push Notifications service. Choose either of the following options:
+
+- Register without UserId
+
+	To register without userId use the following pattern
+	```
 	var bmsPush = new BMSPush()
 	function callback(response) {
-		alert(response.response)
+	alert(response.response)
 	}
 	var initParams = {
 		"appGUID":"push app GUID",
@@ -136,67 +183,91 @@ Use the following code snippet to register in IBM Cloud push notifications servi
 	bmsPush.register(function(response) {
 		alert(response.response)
 	})
+	```
 
-```
->**Note**: Remember to keep custom DeviceId <strong>unique</strong> for each device.
-For Debugging use `bmsPush.isDebugEnable(true)`.
+- Register with UserId
 
-
-For `UserId` based registration use the following code snippet,
-
-```
-  var bmsPush = new BMSPush()
-  function callback(response) {
+	For `UserId` based registration, use the following code snippet,
+	```	
+	var bmsPush = new BMSPush()
+	function callback(response) {
     alert(response.response)
-  }
-  var initParams = {
-    "appGUID":"push app GUID",
-    "appRegion":"Region where service hosted",
-    "clientSecret":"push app client secret"
-  }
-  bmsPush.initialize(initParams, callback)
-  bmsPush.registerWithUserId("your UserId",function(response) {
-    alert(response.response)
-  })
-```
+	}	
+	var initParams = {
+    	"appGUID":"push app GUID",
+    	"appRegion":"Region where service hosted",
+    	"clientSecret":"push app client secret"
+	}
+	bmsPush.initialize(initParams, callback)
+	  bmsPush.registerWithUserId("your UserId",function(response) {
+    	alert(response.response)
+	})
+	```
 
-## Subscribing for tags.
+`WithUserId` is the user identifier value with which you want to register devices in the push service instance.
 
-To get the available tags use the `retrieveAvailableTags()` method.
+>**Note**: If `userId` is provided, the client secret value must be provided.
+
+
+### Unregistering from notifications
+
+- To unregister from receiving notifications, add the following `unRegisterDevice()` method:
+	```
+	bmsPush.unRegisterDevice(function(response) {
+	alert(response.response)
+	}
+	```
+
+- To unregister the device from `UserId` based registration, you have to call the registration method. See the `Register without userId option` in [Register for notifications](#registering-web-application).
+
+
+## Push Notifications service tags
+
+### Retrieve available tags
+
+To retrieve all the available tags, use the `retrieveAvailableTags()` method.
 
 ```
  bmsPush.retrieveAvailableTags(function(response) { //Retrieve available tags
-    var jsonResponse = JSON.parse(response.response)
-    var tagsArray = []
-    for (i in jsonResponse.tags){
-      tagsArray.push(jsonResponse.tags[i].name)
-    }
-    alert(tagsArray)
+   var jsonResponse = JSON.parse(response.response)
+   var tagsArray = []
+   for (i in jsonResponse.tags){
+     tagsArray.push(jsonResponse.tags[i].name)
+   }
+   alert(tagsArray)
  })
 ```
 
-The tag subscription is handled by the `subscribe()` method. Pass the array of tag names as the parameter.
+### Subscribe to tags
+
+The `subscribe()` API will subscribe the web application for a list of given tags. After the device is subscribed to a particular tag, the device can receive push notifications that are targeted to an audience who have subscribed to that tag.
+
+Use the following code snippet in your application to subscribe a list of tags.
 
 ```
-  bmsPush.subscribe(tagsArray,function(response) {
-    alert(response.response)
+ bmsPush.subscribe(tagsArray,function(response) {
+  alert(response.response)
   })
 ```
 
-To Un-subscribe for a tag or tags use the `unSubscribe()` method. Pass the array of tag names as the parameter.
+### Retrieve subscribed tags
+
+The `retrieveSubscriptions` API will return the list of tags to which a website is subscribed. 
+
+Use the following code snippet in your application to get a subscription list.
 
 ```
-  bmsPush.unSubscribe(tagsArray,function(response) {
-    alert(response.response)
-  }
+bmsPush.retrieveSubscriptions(function(response){
+   alert(response.response);
+ })
 ```
 
-## Unregister from IBM Cloud Push notifications Service
+### Unsubscribing from tags
 
-To unregister the device from receiving push notification add the following `unRegisterDevice()` method.
+To unsubscribe to a tag or tags, use the `unSubscribe()` method. Pass the array of tag names as parameter.
 
 ```
-  bmsPush.unRegisterDevice(function(response) {
+ bmsPush.unSubscribe(tagsArray,function(response) {
     alert(response.response)
   }
 ```
@@ -232,28 +303,29 @@ While sending push notification add the varibale key in `{{}}`
     }
 
   ```
-### Samples & videos
 
-* Please visit for samples - [Github Sample](https://github.com/ibm-bluemix-push-notifications/Web_HelloPush)
+## Samples and videos
 
-* Video Tutorials Available here - [IBM Cloud Push Notifications](https://www.youtube.com/channel/UCRr2Wou-z91fD6QOYtZiHGA)
+* For samples, visit - [Github Sample](https://github.com/ibm-bluemix-mobile-services/bms-samples-swift-hellopush)
 
-### Learning More
+* For video tutorials visit - [IBM Cloud Push Notifications](https://www.youtube.com/playlist?list=PLTroxxTPN9dIZYn9IU-IOcQePO-u5r0r4)
 
-* Visit the **[IBM Cloud Developers Community](https://developer.ibm.com/bluemix/)**.
+### Learning more
+
+* Visit the **[IBM Cloud Developers Community](https://developer.ibm.com/depmodels/cloud/)**.
+
+* [Getting started with IBM MobileFirst Platform for iOS](https://cloud.ibm.com/docs/mobile)
 
 ### Connect with IBM Cloud
 
-[Twitter](https://twitter.com/ibmbluemix) |
-[YouTube](https://www.youtube.com/playlist?list=PLzpeuWUENMK2d3L5qCITo2GQEt-7r0oqm) |
-[Blog](https://developer.ibm.com/bluemix/blog/) |
-[Facebook](https://www.facebook.com/ibmbluemix) |
-[Meetup](http://www.meetup.com/bluemix/)
+[Twitter](https://twitter.com/IBMCloud) |
+[YouTube](https://www.youtube.com/watch?v=AVPoBWScRQc) |
+[Blog](https://developer.ibm.com/depmodels/cloud/) |
+[Facebook](https://www.facebook.com/ibmcloud) |
 
 
 =======================
-
-Copyright 2016-17 IBM Corp.
+Copyright 2020-21 IBM Corp.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
