@@ -1,0 +1,24 @@
+{
+  "source": {
+    "include": [ "./" ],
+    "exclude": [
+      "./.git/",
+      "./LICENSE",
+      "./manifest_Chrome_App.json",
+      "./manifest_chrome_Ext.json",
+      "./manifest_Website.json",
+      "./config.json"
+    ]
+  },
+  "opts": {
+    "readme": "README.md",
+    "recurse": true,
+    "destination": "./doc/"
+  },
+  "templates": {
+        "default": {
+            "outputSourceFiles": false
+        }
+    },
+  "plugins": ["plugins/markdown"]
+}

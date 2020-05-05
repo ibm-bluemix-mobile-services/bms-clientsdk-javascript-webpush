@@ -12,6 +12,11 @@
 */
 //import "bmsutils";
 
+/**
+ * Push SDK class for handling the Web device requests
+ * @module BMSPushServiceWorker
+ */
+
 const regex = /{{\s*([^}]+)\s*}}/g;
 var _pushVaribales = "";
 
@@ -32,7 +37,11 @@ function createTemplateMessage(messageData) {
         return messageData;
     }
 }
-
+/**
+  * Methos to show the notifications when an event arrives
+  * @method module:BMSPushServiceWorker#displayNotification
+  * @param {Object} event - The push event from browser
+  */
 function displayNotification(event) {
     var messageJson = event.data.json();
     var title = messageJson.title ? messageJson.title : "New message";

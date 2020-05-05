@@ -35,6 +35,11 @@ var _pushVaribales;
 var _pushBaseUrl;
 var _pushVapID;
 
+/**
+ * Push SDK class for handling the Web device requests
+ * @module BMSPush
+ */
+
 function BMSPush() {
 
   this.REGION_US_SOUTH = ".ng.bluemix.net";
@@ -46,12 +51,13 @@ function BMSPush() {
 
   /**
   * Initialize the BMS Push SDK
-  *
-  * @param appGUID - The push service App Id value
-  * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
-  * @param clientSecret - The push service client secret value.
-  * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
-  * @param deviceId - Optional parameter for deviceId.
+  * @method module:BMSPush#initialize
+  * @param {string} appGUID - The push service App Id value
+  * @param {string} appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
+  * @param {string} clientSecret - The push service client secret value.
+  * @param {string} websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
+  * @param {string} deviceId - Optional parameter for deviceId.
+  * @param {Object} callback - A callback function
   */
   this.initialize = function(params, callback) {
     printLog("Enter - initialize");
@@ -136,7 +142,8 @@ function BMSPush() {
 
   /**
   * Registers the device on to the BMSPush Notification Server
-  *
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#register 
   */
   this.register = function(callbackM) {
     _userId = "";
@@ -146,7 +153,9 @@ function BMSPush() {
   /**
   * Registers the device on to the BMSPush Notification Server
   *
-  * @param userId: the User ID value.
+  * @param {string} userId: the User ID value.
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#registerWithUserId
   */
   this.registerWithUserId = function(userId, callbackM) {
     registerPush(userId, callbackM)
@@ -154,7 +163,8 @@ function BMSPush() {
 
   /**
   * Unregisters the device from the BMSPush Notification Server
-  *
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#unRegisterDevice
   */
   this.unRegisterDevice = function(callbackM) {
     printLog("Enter - unRegisterDevice");
@@ -207,7 +217,9 @@ function BMSPush() {
     /**
     * Subscribes to a particular backend mobile application Tag(s)
     *
-    * @param tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
+    * @param {string[]} tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#subscribe
     */
     this.subscribe = function(tagArray, callbackM) {
 
@@ -231,7 +243,9 @@ function BMSPush() {
     /**
     * Unsubscribes from an backend mobile application Tag(s)
     *
-    * @param  tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
+    * @param {string[]} tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#unSubscribe
     */
     this.unSubscribe = function(tagArray, callbackM) {
       printLog("Enter - UnSubscribing tags");
@@ -254,7 +268,8 @@ function BMSPush() {
 
     /**
     * Gets the Tags that are subscribed by the device
-    *
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#retrieveSubscriptions
     */
     this.retrieveSubscriptions = function(callbackM) {
       printLog("Enter - retrieveSubscriptions");
@@ -264,7 +279,8 @@ function BMSPush() {
 
     /**
     * Gets all the available Tags for the backend mobile application
-    *
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#retrieveAvailableTags
     */
     this.retrieveAvailableTags = function(callbackM) {
       printLog("Enter - retrieveAvailableTags");
