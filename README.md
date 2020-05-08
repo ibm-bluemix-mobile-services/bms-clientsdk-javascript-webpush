@@ -144,6 +144,7 @@ var initParams = {
     "clientSecret":"push app client secret", 
     "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
     "deviceId":"Optional deviceId for device registration" // optional parameter.
+    "applicationServerKey":"VAPID key" // Get this value from swagger , under appliactions -> webpushServerKey
 }
 bmsPush.initialize(params, callback)
 ```
