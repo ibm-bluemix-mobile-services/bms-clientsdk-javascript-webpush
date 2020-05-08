@@ -141,9 +141,9 @@ function callback(response) {
 var initParams = {
     "appGUID":"push app GUID",
     "appRegion":"Region where service hosted",
-    "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
-	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-    "deviceId":"Optional deviceId for device registration"
+    "clientSecret":"push app client secret", 
+    "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
+    "deviceId":"Optional deviceId for device registration" // optional parameter.
 }
 bmsPush.initialize(params, callback)
 ```
