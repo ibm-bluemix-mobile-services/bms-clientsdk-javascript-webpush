@@ -8,6 +8,6 @@
       "scripts": ["BMSPushSDK.js", "background.js","loader.js"]
     }
   },
-  "permissions": ["gcm", "storage", "notifications","identity", "browser","*://*.bluemix.net/*"],
+  "permissions": ["gcm", "storage", "notifications","identity", "browser","*://*.cloud.ibm.com/*"],
   "icons": { "128": "icon-128.png" }
 }
