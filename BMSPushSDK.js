@@ -30,7 +30,7 @@ var BMSPushResponse = {};
 var _platform;
 var _websitePushIDSafari;
 var _getMethod;
-var _bluemixDeviceId;
+var _ibmCloudDeviceId;
 var _pushVaribales;
 var _pushBaseUrl;
 var _pushVapID;
@@ -42,18 +42,19 @@ var _pushVapID;
 
 function BMSPush() {
 
-  this.REGION_US_SOUTH = ".ng.bluemix.net";
-  this.REGION_UK = ".eu-gb.bluemix.net";
-  this.REGION_SYDNEY = ".au-syd.bluemix.net";
-  this.REGION_GERMANY = ".eu-de.bluemix.net";
-  this.REGION_US_EAST = ".us-east.bluemix.net";
-  this.REGION_JP_TOK = ".jp-tok.bluemix.net";
+  this.REGION_US_SOUTH = "us-south";
+  this.REGION_UK = "eu-gb";
+  this.REGION_SYDNEY = "au-syd";
+  this.REGION_GERMANY = "eu-de";
+  this.REGION_US_EAST = "us-east";
+  this.REGION_JP_TOK = "jp-tok";
+
 
   /**
   * Initialize the BMS Push SDK
   * @method module:BMSPush#initialize
   * @param {string} appGUID - The push service App Id value
-  * @param {string} appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
+  * @param {string} appRegion - The region of the push service you hosted. Eg: us-south , eu-gb or au-syd
   * @param {string} clientSecret - The push service client secret value.
   * @param {string} websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
   * @param {string} deviceId - Optional parameter for deviceId.
@@ -66,12 +67,12 @@ function BMSPush() {
     _appRegion = params.appRegion ? params.appRegion : "";
     _pushClientSecret = params.clientSecret ? params.clientSecret : "";
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
-    _bluemixDeviceId = params.deviceId ? params.deviceId : "";
+    _ibmCloudDeviceId = params.deviceId ? params.deviceId : "";
     _pushVaribales = params.pushVaribales ? params.pushVaribales : "";
     _pushVapID = params.applicationServerKey ? params.applicationServerKey : "";
+    _overrideServerHost = params.overrideServerHost ? params.overrideServerHost : "";
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
-      setRewriteDomain(_appRegion);
       getBaseUrl(_appRegion);
 
       if (validateInput(_pushClientSecret)) {
@@ -82,9 +83,9 @@ function BMSPush() {
 
       if (getBrowser() === CHROME_EXTENSION) {
         _isExtension = true;
-        if (validateInput(_bluemixDeviceId)) {
+        if (validateInput(_ibmCloudDeviceId)) {
           chrome.storage.local.set({
-            'deviceId': _bluemixDeviceId
+            'deviceId': _ibmCloudDeviceId
           });
         }
         if (validateInput(_pushVaribales)) {
@@ -93,8 +94,8 @@ function BMSPush() {
           });
         }
       }else {
-        if (validateInput(_bluemixDeviceId)) {
-          localStorage.setItem("deviceId", _bluemixDeviceId);
+        if (validateInput(_ibmCloudDeviceId)) {
+          localStorage.setItem("deviceId", _ibmCloudDeviceId);
         }
         if (validateInput(_pushVaribales)) {
           localStorage.setItem("pushVaribales", _pushVaribales);
@@ -233,8 +234,8 @@ function BMSPush() {
       if (tagArray.length > 0) {
         callback(subscribeTags(tagArray, callbackM));
       } else {
-        printLog("Error - Tag array cannot be null. Create tags in your Bluemix App");
-        setPushResponse("Error - Tag array cannot be null. Create tags in your Bluemix App", 401, "Error");
+        printLog("Error - Tag array cannot be null. Create tags in your IBM Cloud App");
+        setPushResponse("Error - Tag array cannot be null. Create tags in your IBM Cloud App", 401, "Error");
         callbackM(BMSPushResponse);
       }
       printLog("Exit - Subscribing tags");
@@ -330,7 +331,7 @@ function BMSPush() {
     const FIREFOX_BROWSER = 'Firefox';
     const CHROME_BROWSER = 'Chrome';
     const SERVICE_WORKER = 'BMSPushServiceWorker.js';
-
+    const PUSH_API_ENDPOINT = ".imfpush.cloud.ibm.com";
     function getBrowser() {
       if (window.navigator.userAgent.indexOf("Chrome") != -1 && chrome.runtime && chrome.runtime.getManifest) {
         return CHROME_EXTENSION;
@@ -596,7 +597,7 @@ function BMSPush() {
           }
 
           function callback(response) {
-            printLog("Response from Bluemix Push Notification Service");
+            printLog("Response from IBM Cloud Push Notification Service");
             printLog(response);
           }
 
@@ -940,29 +941,10 @@ function BMSPush() {
           }
 
           function getBaseUrl(appReg) {
-            if (_appRegion == this.REGION_JP_TOK) {
-              _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com';
+            if (_overrideServerHost) {
+                _pushBaseUrl = _overrideServerHost;
             } else {
-              _pushBaseUrl = 'https://imfpush' + _appRegion;
-            }
-          }
-
-          function setRewriteDomain(appReg) {
-            var a = appReg.split(".");
-            if (appReg.includes("stage1-dev")) {
-              _appRegion = ".stage1-dev." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("stage1-test")) {
-              _appRegion = ".stage1-test." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("stage1")) {
-              _appRegion = ".stage1." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("ng")) {
-              _appRegion = ".ng.bluemix.net"
-            } else if (appReg.includes("eu-gb")) {
-              _appRegion = ".eu-gb.bluemix.net"
-            } else if (appReg.includes("au-syd")) {
-              _appRegion = ".au-syd.bluemix.net"
-            } else if (appReg.includes("eu-de")) {
-              _appRegion = ".eu-de.bluemix.net"
+                _pushBaseUrl  = "https://"+appReg+PUSH_API_ENDPOINT
             }
           }
 
