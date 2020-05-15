@@ -26,7 +26,7 @@ function interpolate(messageData) {
             var r = o[b];
             return typeof r === 'string' || typeof r === 'number' ? r : a;
         });
-    }
+    };
 }
 
 function createTemplateMessage(messageData) {
@@ -78,11 +78,11 @@ function onPushNotificationReceived(event) {
         console.log('Event data is : ', event.data.text());
     }
     event.waitUntil(displayNotification(event).then(() => triggerSeenEvent(event.data.text())));
-};
+}
 
 self.addEventListener('push', onPushNotificationReceived);
 
-function send_message_to_client(client, msg) {
+function sendMessageToClient(client, msg) {
     return new Promise(function (resolve, reject) {
         var msgChan = new MessageChannel();
 
@@ -101,7 +101,7 @@ function send_message_to_client(client, msg) {
 function sendMessageToAllClients(msg) {
     clients.matchAll().then(clients => {
         clients.forEach(client => {
-            send_message_to_client(client, msg);
+            sendMessageToClient(client, msg);
         });
     });
 }

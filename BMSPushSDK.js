@@ -358,9 +358,9 @@ function BMSPush() {
           let resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
           if (resultSafariPermission.permission === "default") {
             //User never asked before for permission
-            let base_url = _pushBaseUrl + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
-            printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari);
-            window.safari.pushNotification.requestPermission(base_url,
+            let baseUrl = _pushBaseUrl + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+            printLog("Request user for permission to receive notification for base URL " + baseUrl + " and websitepushID " + _websitePushIDSafari);
+            window.safari.pushNotification.requestPermission(baseUrl,
               _websitePushIDSafari, {
                 "deviceId": localStorage.getItem("deviceId"),
                 "userId": userId
@@ -390,7 +390,7 @@ function BMSPush() {
             var subscribeOptions = { userVisibleOnly: true};
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
               const convertedVapidKey = urlBase64ToUint8Array(_pushVapID);
-              subscribeOptions.applicationServerKey = convertedVapidKey
+              subscribeOptions.applicationServerKey = convertedVapidKey;
             }
             navigator.serviceWorker.ready.then(function(reg) {
               reg.pushManager.getSubscription().then(
@@ -564,7 +564,7 @@ function BMSPush() {
                   } else if (reg.active) {
                     printLog('Service worker active');
                   }
-                  
+
                   if (getBrowser() === SAFARI_BROWSER) {
                     resolve();
                   }
@@ -677,7 +677,7 @@ function BMSPush() {
 
             } else {
               token = subscription;
-              _platform = "APPEXT_CHROME"
+              _platform = "APPEXT_CHROME";
               chrome.storage.local.get('deviceId', function(result) {
                 _deviceId = result.deviceId;
 
@@ -754,7 +754,7 @@ function BMSPush() {
 
             var device = deviceJSON
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
-              device.vapidRegistration = true
+              device.vapidRegistration = true;
             }
             printLog("registerDevice: Checking the previous registration :", device);
             _userId = device.userId;
@@ -972,14 +972,14 @@ function BMSPush() {
               dateTime += performance.now(); //use high-precision timer if available
             }
 
-            var hostname = window.location.hostname
+            var hostname = window.location.hostname;
             var arrayData = [];
-            arrayData.push(String(dateTime).hashCode())
-            arrayData.push(String(token).hashCode())
-            arrayData.push(String(hostname).hashCode())
-            arrayData.push(String(_platform).hashCode())
+            arrayData.push(String(dateTime).hashCode());
+            arrayData.push(String(token).hashCode());
+            arrayData.push(String(hostname).hashCode());
+            arrayData.push(String(_platform).hashCode());
 
-            var finalString = arrayData.join("").replace(/[-.]/g, '').replace(/[,.]/g, '')
+            var finalString = arrayData.join("").replace(/[-.]/g, '').replace(/[,.]/g, '');
             var uuid = "";
             for (var i = 0; i < 32; i++) {
               uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
@@ -1069,7 +1069,7 @@ function BMSPush() {
               var messageUrl = message.data.url ? message.data.url : ""
               chrome.storage.local.set({
                 'messageUrl': messageUrl
-              })
+              });
               var notification = {
                 title: msgtitle,
                 iconUrl: msgIconUrl,
@@ -1152,7 +1152,7 @@ function BMSPush() {
                 if (xmlHttp.readyState == 4) {
                   callback(xmlHttp);
                 }
-              }
+              };
               xmlHttp.open(method, url + action, true); // true for asynchronous
               xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
               chrome.storage.local.get('_pushClientSecret', function(result){
