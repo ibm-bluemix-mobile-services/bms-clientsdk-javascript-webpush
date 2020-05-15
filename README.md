@@ -1,7 +1,7 @@
 IBM Cloud Push Notifications Web SDK
 ===================================================
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6d5d0f8e1b5a4ad3baaf29a96a19628c)](https://www.codacy.com/gh/ibm-bluemix-mobile-services/bms-clientsdk-cordova-plugin-push?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-cordova-plugin-push&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d969042f957a4e78a6e4ea88937c6305)](https://www.codacy.com/app/ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibm-bluemix-mobile-services/bms-clientsdk-javascript-webpush&amp;utm_campaign=Badge_Grade)
 
 The [IBM Cloud Push Notifications service](https://cloud.ibm.com/catalog/services/push-notifications) provides a unified push service to send real-time notifications to mobile and web applications. The SDK enables Safari, Chrome,  Firefox browsers and Chrome Apps & Extensions to receive push notifications sent from the service. 
 
