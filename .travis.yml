@@ -1,0 +1,8 @@
+  language: objective-c
+  install:
+      - npm install -g jsdoc
+  script:
+      - if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then
+          bash scripts/publish-docs.sh;
+        fi
+
