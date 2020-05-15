@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-'use strict'
+'use strict';
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
@@ -135,7 +135,7 @@ function BMSPush() {
       }
     } else {
       printLog("Please provide a valid  appGUID or/and appRegion");
-      setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error")
+      setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error");
       callback(PushResponse);
     }
     printLog("Exit - initialize");
@@ -148,7 +148,7 @@ function BMSPush() {
   */
   this.register = function(callbackM) {
     _userId = "";
-    registerPush(_userId, callbackM)
+    registerPush(_userId, callbackM);
   };
 
   /**
@@ -159,7 +159,7 @@ function BMSPush() {
   * @method module:BMSPush#registerWithUserId
   */
   this.registerWithUserId = function(userId, callbackM) {
-    registerPush(userId, callbackM)
+    registerPush(userId, callbackM);
   };
 
   /**
@@ -197,14 +197,14 @@ function BMSPush() {
                 // the subscription id from your data store and
                 // inform the user that you disabled push
                 printLog('Unsubscription error: ', e);
-                callback("Error in Unregistration")
+                callback("Error in Unregistration");
                 setPushResponse("Insufficient Scope. Error in Unregistration", 401, "Error");
                 callbackM(BMSPushResponse);
               })
             }, 3000);
           }).catch(function(e) {
             printLog('Error thrown while unsubscribing from push messaging :', e);
-            callback("Error in Unregistration")
+            callback("Error in Unregistration");
             var error = "Error thrown while unsubscribing from push messaging :" + e;
             setPushResponse(error, 401, "Error");
             callbackM(BMSPushResponse);
@@ -262,7 +262,7 @@ function BMSPush() {
       } else {
         printLog("Error - Tag array cannot be null");
         setPushResponse("Error - Tag array cannot be null", 401, "Error");
-        callbackM(BMSPushResponse)
+        callbackM(BMSPushResponse);
       }
       printLog("Exit - UnSubscribing tags");
     };
@@ -415,8 +415,8 @@ function BMSPush() {
                         printLog('Unable to subscribe to push.', error);
                         setPushResponse("Notifications aren\'t supported on service workers.", 401, "Error");
                       }
-                      callback("Error in registration")
-                      callbackM(BMSPushResponse)
+                      callback("Error in registration");
+                      callbackM(BMSPushResponse);
                     });
                   }
                 }).catch(function(e) {
@@ -435,12 +435,12 @@ function BMSPush() {
               var status = res.status;
               if (status == 200) {
                 var json = JSON.parse(res.response);
-                _gcmSenderId = json.senderId
+                _gcmSenderId = json.senderId;
                 var senderIds = [_gcmSenderId];
                 chrome.gcm.register(senderIds, function(registrationId) {
                   if (chrome.runtime.lastError) {
                     setPushResponse(chrome.runtime.lastError, 401, "Error");
-                    callbackM(MFPPushResponse)
+                    callbackM(MFPPushResponse);
                     return;
                   }
                   registerUsingToken(registrationId, callbackM);
@@ -449,7 +449,7 @@ function BMSPush() {
               } else {
                 printLog("The response is ,", res);
                 setPushResponse(res.responseText, status, "Error while retrieving the Chrome App/Ext configuration");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
               }
             }, null);
           }
@@ -491,11 +491,11 @@ function BMSPush() {
             setPushResponse("Successfully initialized Push", 200, "");
             printLog("Successfully Initialized");
             isPushInitialized = true;
-            callbackM(BMSPushResponse)
+            callbackM(BMSPushResponse);
           } else {
             printLog("Error in Initializing push");
             isPushInitialized = false;
-            callbackM(BMSPushResponse)
+            callbackM(BMSPushResponse);
           }
         }
 
@@ -564,6 +564,11 @@ function BMSPush() {
                   } else if (reg.active) {
                     printLog('Service worker active');
                   }
+                  
+                  if (getBrowser() === SAFARI_BROWSER) {
+                    resolve();
+                  }
+
                   if (!(reg.showNotification)) {
                     printLog('Notifications aren\'t supported on service workers.');
                     reject(getBMSPushResponse("Notifications aren\'t supported on service workers.", 401, "Error"));
