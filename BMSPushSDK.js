@@ -654,7 +654,7 @@ function BMSPush() {
 
                 _platform = "WEB_CHROME";
               }
-              var device = {}
+              var device = {};
               if (_isUserIdEnabled == true) {
                 if (validateInput(_pushClientSecret)) {
                   registerDevice({
@@ -752,7 +752,7 @@ function BMSPush() {
 
           function registerDevice(deviceJSON, callbackM) {
 
-            var device = deviceJSON
+            var device = deviceJSON;
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
               device.vapidRegistration = true;
             }
@@ -803,12 +803,12 @@ function BMSPush() {
                 printLog("Successfully unregistered the device");
                 setPushResponse(response.responseText, 204, "");
                 localStorage.setItem("deviceId", "");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
                 return response;
               } else {
                 printLog("Error in  unregistering the device");
-                setPushResponse(response.responseText, status, "Error")
-                callbackM(BMSPushResponse)
+                setPushResponse(response.responseText, status, "Error");
+                callbackM(BMSPushResponse);
                 return response;
               }
             }, null);
@@ -901,7 +901,7 @@ function BMSPush() {
                 printLog("Error while retrieve available tags :");
                 printLog("The response is ,", res);
                 setPushResponse(res.responseText, status, "Error while retrieve available tags :");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
               }
               return res;
             }, null);
@@ -949,7 +949,7 @@ function BMSPush() {
             if (_overrideServerHost) {
                 _pushBaseUrl = _overrideServerHost;
             } else {
-                _pushBaseUrl  = "https://"+appReg+PUSH_API_ENDPOINT
+                _pushBaseUrl  = "https://"+appReg+PUSH_API_ENDPOINT;
             }
           }
 
@@ -987,7 +987,7 @@ function BMSPush() {
             if (_isExtension) {
               chrome.storage.local.set({
                 'deviceId': uuid
-              })
+              });
             } else {
               localStorage.setItem("deviceId", uuid);
             }
@@ -1048,7 +1048,7 @@ function BMSPush() {
                       var r = o[b];
                       return typeof r === 'string' || typeof r === 'number' ? r : a;
                   });
-              }
+              };
             }
             function createTemplateMessage() {
               chrome.storage.local.get('pushVaribales', function(result) {
@@ -1066,7 +1066,7 @@ function BMSPush() {
             }
 
             function createChromeNotification(msgIconUrl) {
-              var messageUrl = message.data.url ? message.data.url : ""
+              var messageUrl = message.data.url ? message.data.url : "";
               chrome.storage.local.set({
                 'messageUrl': messageUrl
               });
