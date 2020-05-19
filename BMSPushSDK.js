@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-'use strict'
+'use strict';
 /*
 The variables for SDK to work. Need to be figured out how to set them globally
 */
@@ -30,28 +30,35 @@ var BMSPushResponse = {};
 var _platform;
 var _websitePushIDSafari;
 var _getMethod;
-var _bluemixDeviceId;
+var _ibmCloudDeviceId;
 var _pushVaribales;
 var _pushBaseUrl;
 var _pushVapID;
 
+/**
+ * Push SDK class for handling the Web device requests
+ * @module BMSPush
+ */
+
 function BMSPush() {
 
-  this.REGION_US_SOUTH = ".ng.bluemix.net";
-  this.REGION_UK = ".eu-gb.bluemix.net";
-  this.REGION_SYDNEY = ".au-syd.bluemix.net";
-  this.REGION_GERMANY = ".eu-de.bluemix.net";
-  this.REGION_US_EAST = ".us-east.bluemix.net";
-  this.REGION_JP_TOK = ".jp-tok.bluemix.net";
+  this.REGION_US_SOUTH = "us-south";
+  this.REGION_UK = "eu-gb";
+  this.REGION_SYDNEY = "au-syd";
+  this.REGION_GERMANY = "eu-de";
+  this.REGION_US_EAST = "us-east";
+  this.REGION_JP_TOK = "jp-tok";
+
 
   /**
   * Initialize the BMS Push SDK
-  *
-  * @param appGUID - The push service App Id value
-  * @param appRegion - The region of the push service you hosted. Eg: .ng.bluemix.net, .eu-gb.bluemix.net or .au-syd.bluemix.net
-  * @param clientSecret - The push service client secret value.
-  * @param websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
-  * @param deviceId - Optional parameter for deviceId.
+  * @method module:BMSPush#initialize
+  * @param {string} appGUID - The push service App Id value
+  * @param {string} appRegion - The region of the push service you hosted. Eg: us-south , eu-gb or au-syd
+  * @param {string} clientSecret - The push service client secret value.
+  * @param {string} websitePushIDSafari - Optional parameter for safari push notifications only. The value should match the website Push ID provided during the server side configuration.
+  * @param {string} deviceId - Optional parameter for deviceId.
+  * @param {Object} callback - A callback function
   */
   this.initialize = function(params, callback) {
     printLog("Enter - initialize");
@@ -60,12 +67,12 @@ function BMSPush() {
     _appRegion = params.appRegion ? params.appRegion : "";
     _pushClientSecret = params.clientSecret ? params.clientSecret : "";
     _websitePushIDSafari = params.websitePushIDSafari ? params.websitePushIDSafari : "";
-    _bluemixDeviceId = params.deviceId ? params.deviceId : "";
+    _ibmCloudDeviceId = params.deviceId ? params.deviceId : "";
     _pushVaribales = params.pushVaribales ? params.pushVaribales : "";
     _pushVapID = params.applicationServerKey ? params.applicationServerKey : "";
+    _overrideServerHost = params.overrideServerHost ? params.overrideServerHost : "";
 
     if (validateInput(_appId) && validateInput(_appRegion)) {
-      setRewriteDomain(_appRegion);
       getBaseUrl(_appRegion);
 
       if (validateInput(_pushClientSecret)) {
@@ -76,9 +83,9 @@ function BMSPush() {
 
       if (getBrowser() === CHROME_EXTENSION) {
         _isExtension = true;
-        if (validateInput(_bluemixDeviceId)) {
+        if (validateInput(_ibmCloudDeviceId)) {
           chrome.storage.local.set({
-            'deviceId': _bluemixDeviceId
+            'deviceId': _ibmCloudDeviceId
           });
         }
         if (validateInput(_pushVaribales)) {
@@ -87,8 +94,8 @@ function BMSPush() {
           });
         }
       }else {
-        if (validateInput(_bluemixDeviceId)) {
-          localStorage.setItem("deviceId", _bluemixDeviceId);
+        if (validateInput(_ibmCloudDeviceId)) {
+          localStorage.setItem("deviceId", _ibmCloudDeviceId);
         }
         if (validateInput(_pushVaribales)) {
           localStorage.setItem("pushVaribales", _pushVaribales);
@@ -128,7 +135,7 @@ function BMSPush() {
       }
     } else {
       printLog("Please provide a valid  appGUID or/and appRegion");
-      setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error")
+      setPushResponse("Please provide a valid  appGUID or/and appRegion", 404, "Error");
       callback(PushResponse);
     }
     printLog("Exit - initialize");
@@ -136,25 +143,29 @@ function BMSPush() {
 
   /**
   * Registers the device on to the BMSPush Notification Server
-  *
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#register 
   */
   this.register = function(callbackM) {
     _userId = "";
-    registerPush(_userId, callbackM)
+    registerPush(_userId, callbackM);
   };
 
   /**
   * Registers the device on to the BMSPush Notification Server
   *
-  * @param userId: the User ID value.
+  * @param {string} userId: the User ID value.
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#registerWithUserId
   */
   this.registerWithUserId = function(userId, callbackM) {
-    registerPush(userId, callbackM)
+    registerPush(userId, callbackM);
   };
 
   /**
   * Unregisters the device from the BMSPush Notification Server
-  *
+  * @param {Object} callback - A callback function
+  * @method module:BMSPush#unRegisterDevice
   */
   this.unRegisterDevice = function(callbackM) {
     printLog("Enter - unRegisterDevice");
@@ -186,14 +197,14 @@ function BMSPush() {
                 // the subscription id from your data store and
                 // inform the user that you disabled push
                 printLog('Unsubscription error: ', e);
-                callback("Error in Unregistration")
+                callback("Error in Unregistration");
                 setPushResponse("Insufficient Scope. Error in Unregistration", 401, "Error");
                 callbackM(BMSPushResponse);
               })
             }, 3000);
           }).catch(function(e) {
             printLog('Error thrown while unsubscribing from push messaging :', e);
-            callback("Error in Unregistration")
+            callback("Error in Unregistration");
             var error = "Error thrown while unsubscribing from push messaging :" + e;
             setPushResponse(error, 401, "Error");
             callbackM(BMSPushResponse);
@@ -207,7 +218,9 @@ function BMSPush() {
     /**
     * Subscribes to a particular backend mobile application Tag(s)
     *
-    * @param tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
+    * @param {string[]} tags - The Tag array to subscribe to. Eg; ["tag1","tag2"]
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#subscribe
     */
     this.subscribe = function(tagArray, callbackM) {
 
@@ -221,8 +234,8 @@ function BMSPush() {
       if (tagArray.length > 0) {
         callback(subscribeTags(tagArray, callbackM));
       } else {
-        printLog("Error - Tag array cannot be null. Create tags in your Bluemix App");
-        setPushResponse("Error - Tag array cannot be null. Create tags in your Bluemix App", 401, "Error");
+        printLog("Error - Tag array cannot be null. Create tags in your IBM Cloud App");
+        setPushResponse("Error - Tag array cannot be null. Create tags in your IBM Cloud App", 401, "Error");
         callbackM(BMSPushResponse);
       }
       printLog("Exit - Subscribing tags");
@@ -231,7 +244,9 @@ function BMSPush() {
     /**
     * Unsubscribes from an backend mobile application Tag(s)
     *
-    * @param  tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
+    * @param {string[]} tags - The Tag name array to unsubscribe from. Eg: ["tag1","tag2"]
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#unSubscribe
     */
     this.unSubscribe = function(tagArray, callbackM) {
       printLog("Enter - UnSubscribing tags");
@@ -247,14 +262,15 @@ function BMSPush() {
       } else {
         printLog("Error - Tag array cannot be null");
         setPushResponse("Error - Tag array cannot be null", 401, "Error");
-        callbackM(BMSPushResponse)
+        callbackM(BMSPushResponse);
       }
       printLog("Exit - UnSubscribing tags");
     };
 
     /**
     * Gets the Tags that are subscribed by the device
-    *
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#retrieveSubscriptions
     */
     this.retrieveSubscriptions = function(callbackM) {
       printLog("Enter - retrieveSubscriptions");
@@ -264,7 +280,8 @@ function BMSPush() {
 
     /**
     * Gets all the available Tags for the backend mobile application
-    *
+    * @param {Object} callback - A callback function
+    * @method module:BMSPush#retrieveAvailableTags
     */
     this.retrieveAvailableTags = function(callbackM) {
       printLog("Enter - retrieveAvailableTags");
@@ -314,7 +331,7 @@ function BMSPush() {
     const FIREFOX_BROWSER = 'Firefox';
     const CHROME_BROWSER = 'Chrome';
     const SERVICE_WORKER = 'BMSPushServiceWorker.js';
-
+    const PUSH_API_ENDPOINT = ".imfpush.cloud.ibm.com";
     function getBrowser() {
       if (window.navigator.userAgent.indexOf("Chrome") != -1 && chrome.runtime && chrome.runtime.getManifest) {
         return CHROME_EXTENSION;
@@ -341,9 +358,9 @@ function BMSPush() {
           let resultSafariPermission = window.safari.pushNotification.permission(_websitePushIDSafari);
           if (resultSafariPermission.permission === "default") {
             //User never asked before for permission
-            let base_url = _pushBaseUrl + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
-            printLog("Request user for permission to receive notification for base URL " + base_url + " and websitepushID " + _websitePushIDSafari);
-            window.safari.pushNotification.requestPermission(base_url,
+            let baseUrl = _pushBaseUrl + "/imfpush/v1/apps/" + _appId + "/settings/safariWebConf";
+            printLog("Request user for permission to receive notification for base URL " + baseUrl + " and websitepushID " + _websitePushIDSafari);
+            window.safari.pushNotification.requestPermission(baseUrl,
               _websitePushIDSafari, {
                 "deviceId": localStorage.getItem("deviceId"),
                 "userId": userId
@@ -373,7 +390,7 @@ function BMSPush() {
             var subscribeOptions = { userVisibleOnly: true};
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
               const convertedVapidKey = urlBase64ToUint8Array(_pushVapID);
-              subscribeOptions.applicationServerKey = convertedVapidKey
+              subscribeOptions.applicationServerKey = convertedVapidKey;
             }
             navigator.serviceWorker.ready.then(function(reg) {
               reg.pushManager.getSubscription().then(
@@ -398,8 +415,8 @@ function BMSPush() {
                         printLog('Unable to subscribe to push.', error);
                         setPushResponse("Notifications aren\'t supported on service workers.", 401, "Error");
                       }
-                      callback("Error in registration")
-                      callbackM(BMSPushResponse)
+                      callback("Error in registration");
+                      callbackM(BMSPushResponse);
                     });
                   }
                 }).catch(function(e) {
@@ -418,12 +435,12 @@ function BMSPush() {
               var status = res.status;
               if (status == 200) {
                 var json = JSON.parse(res.response);
-                _gcmSenderId = json.senderId
+                _gcmSenderId = json.senderId;
                 var senderIds = [_gcmSenderId];
                 chrome.gcm.register(senderIds, function(registrationId) {
                   if (chrome.runtime.lastError) {
                     setPushResponse(chrome.runtime.lastError, 401, "Error");
-                    callbackM(MFPPushResponse)
+                    callbackM(MFPPushResponse);
                     return;
                   }
                   registerUsingToken(registrationId, callbackM);
@@ -432,7 +449,7 @@ function BMSPush() {
               } else {
                 printLog("The response is ,", res);
                 setPushResponse(res.responseText, status, "Error while retrieving the Chrome App/Ext configuration");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
               }
             }, null);
           }
@@ -474,11 +491,11 @@ function BMSPush() {
             setPushResponse("Successfully initialized Push", 200, "");
             printLog("Successfully Initialized");
             isPushInitialized = true;
-            callbackM(BMSPushResponse)
+            callbackM(BMSPushResponse);
           } else {
             printLog("Error in Initializing push");
             isPushInitialized = false;
-            callbackM(BMSPushResponse)
+            callbackM(BMSPushResponse);
           }
         }
 
@@ -547,6 +564,11 @@ function BMSPush() {
                   } else if (reg.active) {
                     printLog('Service worker active');
                   }
+
+                  if (getBrowser() === SAFARI_BROWSER) {
+                    resolve();
+                  }
+
                   if (!(reg.showNotification)) {
                     printLog('Notifications aren\'t supported on service workers.');
                     reject(getBMSPushResponse("Notifications aren\'t supported on service workers.", 401, "Error"));
@@ -580,7 +602,7 @@ function BMSPush() {
           }
 
           function callback(response) {
-            printLog("Response from Bluemix Push Notification Service");
+            printLog("Response from IBM Cloud Push Notification Service");
             printLog(response);
           }
 
@@ -632,7 +654,7 @@ function BMSPush() {
 
                 _platform = "WEB_CHROME";
               }
-              var device = {}
+              var device = {};
               if (_isUserIdEnabled == true) {
                 if (validateInput(_pushClientSecret)) {
                   registerDevice({
@@ -655,7 +677,7 @@ function BMSPush() {
 
             } else {
               token = subscription;
-              _platform = "APPEXT_CHROME"
+              _platform = "APPEXT_CHROME";
               chrome.storage.local.get('deviceId', function(result) {
                 _deviceId = result.deviceId;
 
@@ -730,9 +752,9 @@ function BMSPush() {
 
           function registerDevice(deviceJSON, callbackM) {
 
-            var device = deviceJSON
+            var device = deviceJSON;
             if (validateInput(_pushVapID) && getBrowser() === CHROME_BROWSER) {
-              device.vapidRegistration = true
+              device.vapidRegistration = true;
             }
             printLog("registerDevice: Checking the previous registration :", device);
             _userId = device.userId;
@@ -781,12 +803,12 @@ function BMSPush() {
                 printLog("Successfully unregistered the device");
                 setPushResponse(response.responseText, 204, "");
                 localStorage.setItem("deviceId", "");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
                 return response;
               } else {
                 printLog("Error in  unregistering the device");
-                setPushResponse(response.responseText, status, "Error")
-                callbackM(BMSPushResponse)
+                setPushResponse(response.responseText, status, "Error");
+                callbackM(BMSPushResponse);
                 return response;
               }
             }, null);
@@ -879,7 +901,7 @@ function BMSPush() {
                 printLog("Error while retrieve available tags :");
                 printLog("The response is ,", res);
                 setPushResponse(res.responseText, status, "Error while retrieve available tags :");
-                callbackM(BMSPushResponse)
+                callbackM(BMSPushResponse);
               }
               return res;
             }, null);
@@ -924,29 +946,10 @@ function BMSPush() {
           }
 
           function getBaseUrl(appReg) {
-            if (_appRegion == this.REGION_JP_TOK) {
-              _pushBaseUrl = 'https://jp-tok.imfpush.cloud.ibm.com';
+            if (_overrideServerHost) {
+                _pushBaseUrl = _overrideServerHost;
             } else {
-              _pushBaseUrl = 'https://imfpush' + _appRegion;
-            }
-          }
-
-          function setRewriteDomain(appReg) {
-            var a = appReg.split(".");
-            if (appReg.includes("stage1-dev")) {
-              _appRegion = ".stage1-dev." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("stage1-test")) {
-              _appRegion = ".stage1-test." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("stage1")) {
-              _appRegion = ".stage1." + a[2] + ".bluemix.net"
-            } else if (appReg.includes("ng")) {
-              _appRegion = ".ng.bluemix.net"
-            } else if (appReg.includes("eu-gb")) {
-              _appRegion = ".eu-gb.bluemix.net"
-            } else if (appReg.includes("au-syd")) {
-              _appRegion = ".au-syd.bluemix.net"
-            } else if (appReg.includes("eu-de")) {
-              _appRegion = ".eu-de.bluemix.net"
+                _pushBaseUrl  = "https://"+appReg+PUSH_API_ENDPOINT;
             }
           }
 
@@ -969,14 +972,14 @@ function BMSPush() {
               dateTime += performance.now(); //use high-precision timer if available
             }
 
-            var hostname = window.location.hostname
+            var hostname = window.location.hostname;
             var arrayData = [];
-            arrayData.push(String(dateTime).hashCode())
-            arrayData.push(String(token).hashCode())
-            arrayData.push(String(hostname).hashCode())
-            arrayData.push(String(_platform).hashCode())
+            arrayData.push(String(dateTime).hashCode());
+            arrayData.push(String(token).hashCode());
+            arrayData.push(String(hostname).hashCode());
+            arrayData.push(String(_platform).hashCode());
 
-            var finalString = arrayData.join("").replace(/[-.]/g, '').replace(/[,.]/g, '')
+            var finalString = arrayData.join("").replace(/[-.]/g, '').replace(/[,.]/g, '');
             var uuid = "";
             for (var i = 0; i < 32; i++) {
               uuid += finalString.charAt(Math.floor(Math.random() * finalString.length));
@@ -984,7 +987,7 @@ function BMSPush() {
             if (_isExtension) {
               chrome.storage.local.set({
                 'deviceId': uuid
-              })
+              });
             } else {
               localStorage.setItem("deviceId", uuid);
             }
@@ -1045,7 +1048,7 @@ function BMSPush() {
                       var r = o[b];
                       return typeof r === 'string' || typeof r === 'number' ? r : a;
                   });
-              }
+              };
             }
             function createTemplateMessage() {
               chrome.storage.local.get('pushVaribales', function(result) {
@@ -1063,10 +1066,10 @@ function BMSPush() {
             }
 
             function createChromeNotification(msgIconUrl) {
-              var messageUrl = message.data.url ? message.data.url : ""
+              var messageUrl = message.data.url ? message.data.url : "";
               chrome.storage.local.set({
                 'messageUrl': messageUrl
-              })
+              });
               var notification = {
                 title: msgtitle,
                 iconUrl: msgIconUrl,
@@ -1149,7 +1152,7 @@ function BMSPush() {
                 if (xmlHttp.readyState == 4) {
                   callback(xmlHttp);
                 }
-              }
+              };
               xmlHttp.open(method, url + action, true); // true for asynchronous
               xmlHttp.setRequestHeader('Content-Type', 'application/json; charset = UTF-8');
               chrome.storage.local.get('_pushClientSecret', function(result){

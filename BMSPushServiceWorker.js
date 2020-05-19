@@ -12,6 +12,11 @@
 */
 //import "bmsutils";
 
+/**
+ * Push SDK class for handling the Web device requests
+ * @module BMSPushServiceWorker
+ */
+
 const regex = /{{\s*([^}]+)\s*}}/g;
 var _pushVaribales = "";
 
@@ -21,7 +26,7 @@ function interpolate(messageData) {
             var r = o[b];
             return typeof r === 'string' || typeof r === 'number' ? r : a;
         });
-    }
+    };
 }
 
 function createTemplateMessage(messageData) {
@@ -32,15 +37,19 @@ function createTemplateMessage(messageData) {
         return messageData;
     }
 }
-
+/**
+  * Methos to show the notifications when an event arrives
+  * @method module:BMSPushServiceWorker#displayNotification
+  * @param {Object} event - The push event from browser
+  */
 function displayNotification(event) {
     var messageJson = event.data.json();
     var title = messageJson.title ? messageJson.title : "New message";
     var imageUrl = messageJson.iconUrl ? messageJson.iconUrl : "images/icon.png";
     var tagJson = messageJson.payload;
     var tag = tagJson.tag ? tagJson.tag : "";
-    var bodyAlert = messageJson.alert ? messageJson.alert : "Example message"
-    var payloadData = messageJson.payload ? messageJson.payload : "Example message"
+    var bodyAlert = messageJson.alert ? messageJson.alert : "Example message";
+    var payloadData = messageJson.payload ? messageJson.payload : "Example message";
     let messageTemp;
     if ((messageTemp = regex.exec(bodyAlert)) !== null) {
         bodyAlert = createTemplateMessage(bodyAlert);
@@ -56,11 +65,11 @@ function displayNotification(event) {
 
 
 function triggerSeenEvent(strMsg) {
-    send_message_to_all_clients("msgEventSeen:" + strMsg);
+    sendMessageToAllClients("msgEventSeen:" + strMsg);
 }
 
 function triggerOpenEvent(strMsg) {
-    send_message_to_all_clients("msgEventOpen:" + strMsg);
+    sendMessageToAllClients("msgEventOpen:" + strMsg);
 }
 
 function onPushNotificationReceived(event) {
@@ -69,15 +78,15 @@ function onPushNotificationReceived(event) {
         console.log('Event data is : ', event.data.text());
     }
     event.waitUntil(displayNotification(event).then(() => triggerSeenEvent(event.data.text())));
-};
+}
 
 self.addEventListener('push', onPushNotificationReceived);
 
-function send_message_to_client(client, msg) {
+function sendMessageToClient(client, msg) {
     return new Promise(function (resolve, reject) {
-        var msg_chan = new MessageChannel();
+        var msgChan = new MessageChannel();
 
-        msg_chan.port1.onmessage = function (event) {
+        msgChan.port1.onmessage = function (event) {
             if (event.data.error) {
                 reject(event.data.error);
             } else {
@@ -85,15 +94,15 @@ function send_message_to_client(client, msg) {
             }
         };
 
-        client.postMessage(msg, [msg_chan.port2]);
+        client.postMessage(msg, [msgChan.port2]);
     });
 }
 
-function send_message_to_all_clients(msg) {
+function sendMessageToAllClients(msg) {
     clients.matchAll().then(clients => {
         clients.forEach(client => {
-            send_message_to_client(client, msg);
-        })
+            sendMessageToClient(client, msg);
+        });
     });
 }
 
@@ -122,5 +131,5 @@ self.addEventListener('notificationclick', function (event) {
 
 self.addEventListener('pushsubscriptionchange', function () {
     console.log('Push Subscription change');
-    send_message_to_all_clients("updateRegistration:");
+    sendMessageToAllClients("updateRegistration:");
 });

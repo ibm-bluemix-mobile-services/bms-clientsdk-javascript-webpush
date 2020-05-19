@@ -56,7 +56,7 @@ Choose any of the following options, based on your browser:
 	2. Edit the `manifest_Website.json` file.
 
 		- For Chrome browser:
-			```JSON		
+			```JSON
 			{
 				"name": "YOUR_WEBSITE_NAME",
 				"gcm_sender_id": "GCM_Sender_Id"
@@ -76,7 +76,7 @@ Choose any of the following options, based on your browser:
 			Change `name` to your website's name.
 
       
-	3. Change the `manifest_Website.json` file name to `manifest.json`.        
+	3. Change the `manifest_Website.json` file name to `manifest.json`.      
 
 	4. Include the `manifest.json` in `<head>` tag of your html file .
 		```HTML
@@ -132,6 +132,7 @@ Choose any of the following options, based on your browser:
 ### Initialize web Push SDK
 
 Initialise the web push SDK with IBM Cloud Push Notifications service `app GUID`,`clientSecret`,`websitePushIDSafari`,`deviceId` and `app Region`.  
+If you are using dedicated service, use `overrideServerHost` and add any of the IBM Cloud region value.
 
 ```JS
 var bmsPush = new BMSPush()
@@ -141,21 +142,24 @@ function callback(response) {
 var initParams = {
     "appGUID":"push app GUID",
     "appRegion":"Region where service hosted",
-    "clientSecret":"push app client secret", // optional parameter. This value is needed for userId based notifications registration.
-	"websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
-    "deviceId":"Optional deviceId for device registration"
+    "clientSecret":"push app client secret", 
+    "websitePushIDSafari": "website Push ID for safari" // Optional parameter for Safari web push,
+    "deviceId":"Optional deviceId for device registration" // optional parameter.
+    "applicationServerKey":"VAPID key" // Get this value from swagger , under appliactions -> webpushServerKey,
+    "overrideServerHost": "YOUR_SERVICE_HOST" // optional parameter
+    
 }
 bmsPush.initialize(params, callback)
 ```
 
 The `App Region` specifies the location where the Push service is hosted. You can use one of the following three values:
 
-- For US Dallas - `.ng.bluemix.net`
-- For UK - `.eu-gb.bluemix.net`
-- For Sydney - `.au-syd.bluemix.net`
-- For Germany -  `.eu-de.bluemix.net`
-- For US East - `.us-east.bluemix.net`
-- For Tokyo - `.jp-tok.bluemix.net`
+- For US Dallas - `us-south`
+- For UK - `eu-gb`
+- For Sydney - `au-syd`
+- For Germany -  `eu-de`
+- For US East - `us-east`
+- For Tokyo - `jp-tok`
 
 >**Note**:For debugging, use `bmsPush.isDebugEnable(true)`.
 
@@ -189,7 +193,7 @@ Use the `register()` or `registerWithUserId()` API to register the device with I
 	var bmsPush = new BMSPush()
 	function callback(response) {
     	alert(response.response)
-	}	
+	}
 	var initParams = {
     	"appGUID":"push app GUID",
     	"appRegion":"Region where service hosted",

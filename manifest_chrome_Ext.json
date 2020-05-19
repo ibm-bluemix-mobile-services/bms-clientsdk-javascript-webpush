@@ -12,6 +12,6 @@
     "default_icon": "icon-128.png",
     "default_popup": "window.html"
   },
-  "permissions": ["gcm", "storage", "notifications","*://*.bluemix.net/*","identity"],
+  "permissions": ["gcm", "storage", "notifications","*://*.cloud.ibm.com/*","identity"],
   "icons": { "128": "icon-128.png" }
 }
