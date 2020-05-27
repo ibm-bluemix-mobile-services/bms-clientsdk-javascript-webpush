@@ -161,6 +161,8 @@ The `App Region` specifies the location where the Push service is hosted. You ca
 - For US East - `us-east`
 - For Tokyo - `jp-tok`
 
+`applicationServerKey` is the VAPID implementaion for Chrome. This is required for new versions of Chrome. Get this value from the [Push service swagger](https://cloud.ibm.com/apidocs/push-notifications), under the `applications -> webpushServerKey` section.
+
 >**Note**:For debugging, use `bmsPush.isDebugEnable(true)`.
 
 ## Register for notifications
