@@ -34,7 +34,7 @@ var _ibmCloudDeviceId;
 var _pushVaribales;
 var _pushBaseUrl;
 var _pushVapID;
-
+var _overrideServerHost;
 /**
  * Push SDK class for handling the Web device requests
  * @module BMSPush
