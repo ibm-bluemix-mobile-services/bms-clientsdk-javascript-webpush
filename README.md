@@ -24,6 +24,7 @@ Ensure that you go through [IBM Cloud Push Notifications service documentation](
     - [Unsubscribing from tags](#unsubscribing-from-tags)
 - [Parameterize Push Notifications](#parameterize-push-notifications)
 - [Samples and videos](#samples-and-videos)
+- [Contributing](#contributing)
 
 
 ## Prerequisites
@@ -324,6 +325,10 @@ While sending push notification add the varibale key in `{{}}`
 * For samples, visit - [Github Sample](https://github.com/ibm-bluemix-mobile-services/bms-samples-swift-hellopush)
 
 * For video tutorials visit - [IBM Cloud Push Notifications](https://www.youtube.com/playlist?list=PLTroxxTPN9dIZYn9IU-IOcQePO-u5r0r4)
+
+## Contributing
+
+We would love any and all help! If you would like to contribute, please read our [CONTRIBUTING](.github/CONTRIBUTING.md) documentation with information on getting started.
 
 ### Learning more
 
