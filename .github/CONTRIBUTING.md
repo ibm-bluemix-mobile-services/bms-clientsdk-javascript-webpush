@@ -10,9 +10,8 @@ See the [issue template](issue_template.md).
 
 # Coding Style
 
-- [Cordova reference 1](https://cordova.apache.org/docs/en/10.x/guide/overview/)
-- [Cordova reference 2](https://cordova.apache.org/docs/en/10.x/guide/platforms/android/)
-
+- [Javascript style guide reference 1](https://google.github.io/styleguide/jsguide.html)
+- [Javascript style guide reference 2](https://developer.mozilla.org/en-US/docs/MDN/Guidelines/Code_guidelines/JavaScript)
 # Pull Requests
 
 If you want to contribute to the repository, here's a quick guide:
