@@ -10,8 +10,8 @@ See the [issue template](issueTemplate.md).
 
 ## Coding Style
 
-- [Javascript style guide reference 1](https://google.github.io/styleguide/jsguide.html)
-- [Javascript style guide reference 2](https://developer.mozilla.org/en-US/docs/MDN/Guidelines/Code_guidelines/JavaScript)
+-   [Javascript style guide reference 1](https://google.github.io/styleguide/jsguide.html)
+-   [Javascript style guide reference 2](https://developer.mozilla.org/en-US/docs/MDN/Guidelines/Code_guidelines/JavaScript)
 
 ## Pull Requests
 
