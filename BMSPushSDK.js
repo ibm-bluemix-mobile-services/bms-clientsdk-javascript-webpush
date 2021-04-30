@@ -48,7 +48,6 @@ function BMSPush() {
   this.REGION_GERMANY = "eu-de";
   this.REGION_US_EAST = "us-east";
   this.REGION_JP_TOK = "jp-tok";
-  this.REGION_JP_OSA = "jp-osa";
 
 
   /**
